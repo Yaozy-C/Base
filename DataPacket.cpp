@@ -60,15 +60,12 @@ namespace Base {
         return item;
     }
 
-    /*void DataPacket::Clear() {
-
-    }*/
-
     string DataPacket::GetJsonText() {
         cJSON *writer = CreateWriter();
         try {
             EncodeJson(writer);
         } catch (...) {
+            LOG_ERROR("Encode json error");
         }
         char *p = cJSON_PrintUnformatted(writer);
         string json = p;
