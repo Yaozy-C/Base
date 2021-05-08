@@ -8,136 +8,140 @@
 		<Option virtualFolders="CMake Files\;"/>
 		<Build>
 			<Target title="all">
-				<Option working_dir="/Users/yaozy/Documents/code/Cpp/Base"/>
+				<Option working_dir="/tmp/tmp.YOi6VjSkBx"/>
 				<Option type="4"/>
 				<MakeCommands>
-					<Build command="/usr/bin/make -j8 -f &quot;/Users/yaozy/Documents/code/Cpp/Base/Makefile&quot;  VERBOSE=1 all"/>
-					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/yaozy/Documents/code/Cpp/Base/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j8 -f &quot;/Users/yaozy/Documents/code/Cpp/Base/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/yaozy/Documents/code/Cpp/Base/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="/usr/bin/make -j4 -f &quot;/tmp/tmp.YOi6VjSkBx/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/tmp/tmp.YOi6VjSkBx/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/tmp/tmp.YOi6VjSkBx/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/tmp/tmp.YOi6VjSkBx/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="rebuild_cache">
-				<Option working_dir="/Users/yaozy/Documents/code/Cpp/Base"/>
+				<Option working_dir="/tmp/tmp.YOi6VjSkBx"/>
 				<Option type="4"/>
 				<MakeCommands>
-					<Build command="/usr/bin/make -j8 -f &quot;/Users/yaozy/Documents/code/Cpp/Base/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
-					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/yaozy/Documents/code/Cpp/Base/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j8 -f &quot;/Users/yaozy/Documents/code/Cpp/Base/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/yaozy/Documents/code/Cpp/Base/Makefile&quot;  VERBOSE=1 clean"/>
-				</MakeCommands>
-			</Target>
-			<Target title="edit_cache">
-				<Option working_dir="/Users/yaozy/Documents/code/Cpp/Base"/>
-				<Option type="4"/>
-				<MakeCommands>
-					<Build command="/usr/bin/make -j8 -f &quot;/Users/yaozy/Documents/code/Cpp/Base/Makefile&quot;  VERBOSE=1 edit_cache"/>
-					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/yaozy/Documents/code/Cpp/Base/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j8 -f &quot;/Users/yaozy/Documents/code/Cpp/Base/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/yaozy/Documents/code/Cpp/Base/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="/usr/bin/make -j4 -f &quot;/tmp/tmp.YOi6VjSkBx/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/tmp/tmp.YOi6VjSkBx/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/tmp/tmp.YOi6VjSkBx/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/tmp/tmp.YOi6VjSkBx/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="Base">
-				<Option output="/Users/yaozy/Documents/code/Cpp/Base/Base" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="/Users/yaozy/Documents/code/Cpp/Base"/>
+				<Option output="/tmp/tmp.YOi6VjSkBx/Base" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/tmp/tmp.YOi6VjSkBx"/>
 				<Option object_output="./"/>
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
 					<Add directory="/usr/local/include"/>
-					<Add directory="/Library/Developer/CommandLineTools/usr/bin/../include/c++/v1"/>
-					<Add directory="/Library/Developer/CommandLineTools/usr/lib/clang/12.0.0/include"/>
-					<Add directory="/Library/Developer/CommandLineTools/usr/include"/>
-					<Add directory="/System/Library/Frameworks"/>
-					<Add directory="/Library/Frameworks"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="/usr/bin/make -j8 -f &quot;/Users/yaozy/Documents/code/Cpp/Base/Makefile&quot;  VERBOSE=1 Base"/>
-					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/yaozy/Documents/code/Cpp/Base/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j8 -f &quot;/Users/yaozy/Documents/code/Cpp/Base/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/yaozy/Documents/code/Cpp/Base/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="/usr/bin/make -j4 -f &quot;/tmp/tmp.YOi6VjSkBx/Makefile&quot;  VERBOSE=1 Base"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/tmp/tmp.YOi6VjSkBx/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/tmp/tmp.YOi6VjSkBx/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/tmp/tmp.YOi6VjSkBx/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="Base/fast">
-				<Option output="/Users/yaozy/Documents/code/Cpp/Base/Base" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="/Users/yaozy/Documents/code/Cpp/Base"/>
+				<Option output="/tmp/tmp.YOi6VjSkBx/Base" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/tmp/tmp.YOi6VjSkBx"/>
 				<Option object_output="./"/>
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
 					<Add directory="/usr/local/include"/>
-					<Add directory="/Library/Developer/CommandLineTools/usr/bin/../include/c++/v1"/>
-					<Add directory="/Library/Developer/CommandLineTools/usr/lib/clang/12.0.0/include"/>
-					<Add directory="/Library/Developer/CommandLineTools/usr/include"/>
-					<Add directory="/System/Library/Frameworks"/>
-					<Add directory="/Library/Frameworks"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="/usr/bin/make -j8 -f &quot;/Users/yaozy/Documents/code/Cpp/Base/Makefile&quot;  VERBOSE=1 Base/fast"/>
-					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/yaozy/Documents/code/Cpp/Base/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j8 -f &quot;/Users/yaozy/Documents/code/Cpp/Base/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/yaozy/Documents/code/Cpp/Base/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="/usr/bin/make -j4 -f &quot;/tmp/tmp.YOi6VjSkBx/Makefile&quot;  VERBOSE=1 Base/fast"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/tmp/tmp.YOi6VjSkBx/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/tmp/tmp.YOi6VjSkBx/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/tmp/tmp.YOi6VjSkBx/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/tmp/tmp.YOi6VjSkBx"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/tmp/tmp.YOi6VjSkBx/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/tmp/tmp.YOi6VjSkBx/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/tmp/tmp.YOi6VjSkBx/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/tmp/tmp.YOi6VjSkBx/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 		</Build>
-		<Unit filename="/Users/yaozy/Documents/code/Cpp/Base/Buffer.cpp">
+		<Unit filename="/tmp/tmp.YOi6VjSkBx/Net/SocketOpt.cpp">
 			<Option target="Base"/>
 		</Unit>
-		<Unit filename="/Users/yaozy/Documents/code/Cpp/Base/Buffer.h">
+		<Unit filename="/tmp/tmp.YOi6VjSkBx/Net/SocketOpt.h">
 			<Option target="Base"/>
 		</Unit>
-		<Unit filename="/Users/yaozy/Documents/code/Cpp/Base/Curl.cpp">
+		<Unit filename="/tmp/tmp.YOi6VjSkBx/Public/Buffer.cpp">
 			<Option target="Base"/>
 		</Unit>
-		<Unit filename="/Users/yaozy/Documents/code/Cpp/Base/Curl.h">
+		<Unit filename="/tmp/tmp.YOi6VjSkBx/Public/Buffer.h">
 			<Option target="Base"/>
 		</Unit>
-		<Unit filename="/Users/yaozy/Documents/code/Cpp/Base/DataPacket.cpp">
+		<Unit filename="/tmp/tmp.YOi6VjSkBx/Public/Curl.cpp">
 			<Option target="Base"/>
 		</Unit>
-		<Unit filename="/Users/yaozy/Documents/code/Cpp/Base/DataPacket.h">
+		<Unit filename="/tmp/tmp.YOi6VjSkBx/Public/Curl.h">
 			<Option target="Base"/>
 		</Unit>
-		<Unit filename="/Users/yaozy/Documents/code/Cpp/Base/IndependentThread.h">
+		<Unit filename="/tmp/tmp.YOi6VjSkBx/Public/DataPacket.cpp">
 			<Option target="Base"/>
 		</Unit>
-		<Unit filename="/Users/yaozy/Documents/code/Cpp/Base/JsonCodeCreator.cpp">
+		<Unit filename="/tmp/tmp.YOi6VjSkBx/Public/DataPacket.h">
 			<Option target="Base"/>
 		</Unit>
-		<Unit filename="/Users/yaozy/Documents/code/Cpp/Base/JsonCodeCreator.h">
+		<Unit filename="/tmp/tmp.YOi6VjSkBx/Public/Log.cpp">
 			<Option target="Base"/>
 		</Unit>
-		<Unit filename="/Users/yaozy/Documents/code/Cpp/Base/Log.cpp">
+		<Unit filename="/tmp/tmp.YOi6VjSkBx/Public/Log.h">
 			<Option target="Base"/>
 		</Unit>
-		<Unit filename="/Users/yaozy/Documents/code/Cpp/Base/Log.h">
+		<Unit filename="/tmp/tmp.YOi6VjSkBx/Public/Tools.cpp">
 			<Option target="Base"/>
 		</Unit>
-		<Unit filename="/Users/yaozy/Documents/code/Cpp/Base/Pool.cpp">
+		<Unit filename="/tmp/tmp.YOi6VjSkBx/Public/Tools.h">
 			<Option target="Base"/>
 		</Unit>
-		<Unit filename="/Users/yaozy/Documents/code/Cpp/Base/Pool.h">
+		<Unit filename="/tmp/tmp.YOi6VjSkBx/Public/cJSON.c">
 			<Option target="Base"/>
 		</Unit>
-		<Unit filename="/Users/yaozy/Documents/code/Cpp/Base/SafeQue.h">
+		<Unit filename="/tmp/tmp.YOi6VjSkBx/Public/cJSON.h">
 			<Option target="Base"/>
 		</Unit>
-		<Unit filename="/Users/yaozy/Documents/code/Cpp/Base/Tools.cpp">
+		<Unit filename="/tmp/tmp.YOi6VjSkBx/Thread/IndependentThread.h">
 			<Option target="Base"/>
 		</Unit>
-		<Unit filename="/Users/yaozy/Documents/code/Cpp/Base/Tools.h">
+		<Unit filename="/tmp/tmp.YOi6VjSkBx/Thread/Pool.cpp">
 			<Option target="Base"/>
 		</Unit>
-		<Unit filename="/Users/yaozy/Documents/code/Cpp/Base/cJSON.c">
+		<Unit filename="/tmp/tmp.YOi6VjSkBx/Thread/Pool.h">
 			<Option target="Base"/>
 		</Unit>
-		<Unit filename="/Users/yaozy/Documents/code/Cpp/Base/cJSON.h">
+		<Unit filename="/tmp/tmp.YOi6VjSkBx/Thread/SafeQue.h">
 			<Option target="Base"/>
 		</Unit>
-		<Unit filename="/Users/yaozy/Documents/code/Cpp/Base/main.cpp">
+		<Unit filename="/tmp/tmp.YOi6VjSkBx/main.cpp">
 			<Option target="Base"/>
 		</Unit>
-		<Unit filename="/Users/yaozy/Documents/code/Cpp/Base/CMakeLists.txt">
+		<Unit filename="/tmp/tmp.YOi6VjSkBx/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>
 		</Unit>
 	</Project>

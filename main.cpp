@@ -1,7 +1,8 @@
-#include "Buffer.h"
-#include "Log.h"
-#include "Tools.h"
-#include "DataPacket.h"
+#include "Public/Buffer.h"
+#include "Public/Log.h"
+#include "Public/Tools.h"
+#include "Public/DataPacket.h"
+
 using namespace std;
 
 
