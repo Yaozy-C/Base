@@ -4,8 +4,9 @@
 
 #include "SocketOpt.h"
 #include "../Public/Log.h"
+#include <cassert>
 
-using namespace Base::Net;
+using namespace Base::Net::Tcp;
 
 namespace {
     typedef struct sockaddr SA;
@@ -42,19 +43,23 @@ const struct sockaddr_in *SocketOpt::SockAddrCast(const struct sockaddr *addr) {
 int SocketOpt::CreateNoBlock(sa_family_t family) {
     int sockfd = ::socket(family, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_TCP);
     if (sockfd < 0) {
-
+        LOG_ERROR("create no block err");
     }
     return sockfd;
 }
 
 void SocketOpt::Bind(int sockfd, const struct sockaddr *addr) {
     int ret = ::bind(sockfd, addr, static_cast<socklen_t>(sizeof(struct sockaddr_in6)));
-    if (ret < 0) {}
+    if (ret < 0) {
+        LOG_ERROR(std::to_string(ret));
+    }
 }
 
 void SocketOpt::Listen(int sockfd) {
     int ret = ::listen(sockfd, SOMAXCONN);
-    if (ret < 0) {}
+    if (ret < 0) {
+        LOG_ERROR(std::to_string(ret));
+    }
 }
 
 int SocketOpt::Accept(int sockfd, struct sockaddr_in6 *addr) {
@@ -63,7 +68,6 @@ int SocketOpt::Accept(int sockfd, struct sockaddr_in6 *addr) {
     int connfd = ::accept4(sockfd, SocketOpt::SockAddrCast(addr), &addrLen, SOCK_NONBLOCK | SOCK_CLOEXEC);
     if (connfd < 0) {
         int savedErrno = errno;
-//        LOG_SYSERR << "Socket::accept";
         switch (savedErrno) {
             case EAGAIN:
             case ECONNABORTED:
@@ -82,11 +86,10 @@ int SocketOpt::Accept(int sockfd, struct sockaddr_in6 *addr) {
             case ENOMEM:
             case ENOTSOCK:
             case EOPNOTSUPP:
-                // unexpected errors
-//                LOG_FATAL << "unexpected error of ::accept " << savedErrno;
+                LOG_ERROR(std::to_string(savedErrno));
                 break;
             default:
-//                LOG_FATAL << "unknown error of ::accept " << savedErrno;
+                LOG_ERROR(std::to_string(savedErrno));
                 break;
         }
     }
@@ -111,22 +114,24 @@ ssize_t SocketOpt::Write(int sockfd, const void *buf, size_t len) {
 
 void SocketOpt::Close(int sockfd) {
     if (::close(sockfd) < 0) {
+        LOG_ERROR("close fd err");
     }
 }
 
 void SocketOpt::ShutdownWrite(int sockfd) {
     if (::shutdown(sockfd, SHUT_WR) < 0) {
+        perror("err:");
         LOG_ERROR("SocketOpt::shutdownWrite");
     }
 }
 
 void SocketOpt::ToIpPort(char *buf, size_t size,
-                       const struct sockaddr *addr) {
+                         const struct sockaddr *addr) {
     ToIp(buf, size, addr);
     size_t end = ::strlen(buf);
     const struct sockaddr_in *addr4 = SockAddrCast(addr);
     uint16_t port = be16toh(addr4->sin_port);
-//    assert(size > end);
+    assert(size > end);
     snprintf(buf + end, size - end, ":%u", port);
 }
 
@@ -145,6 +150,7 @@ void SocketOpt::FromIpPort(const char *ip, uint16_t port, struct sockaddr_in *ad
     addr->sin_port = htobe16(port);
     if (::inet_pton(AF_INET, ip, &addr->sin_addr) <= 0) {
 //        LOG_SYSERR << "SocketOpt::fromIpPort";
+        LOG_ERROR("inet_pton err");
     }
 }
 
@@ -153,6 +159,7 @@ void SocketOpt::FromIpPort(const char *ip, uint16_t port, struct sockaddr_in6 *a
     addr->sin6_port = htobe16(port);
     if (::inet_pton(AF_INET6, ip, &addr->sin6_addr) <= 0) {
 //        LOG_SYSERR << "SocketOpt::fromIpPort";
+        LOG_ERROR("inet_pton err");
     }
 }
 
@@ -183,6 +190,7 @@ struct sockaddr_in6 SocketOpt::GetPeerAddr(int sockfd) {
     auto addrlen = static_cast<socklen_t>(sizeof peeraddr);
     if (::getpeername(sockfd, SockAddrCast(&peeraddr), &addrlen) < 0) {
 //        LOG_SYSERR << "SocketOpt::getLocalAddr";
+        LOG_ERROR("getpeername err");
     }
     return peeraddr;
 }

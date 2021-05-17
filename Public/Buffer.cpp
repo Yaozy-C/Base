@@ -5,7 +5,7 @@
 #include "Buffer.h"
 
 namespace Base {
-    Buffer::Buffer(size_t initSzie) : data(8 + initSzie) {
+    Buffer::Buffer(size_t initSize) : data(8 + initSize) {
         headIndex = 0;
         nextHeadIndex = 0;
         readIndex = 8;
@@ -16,7 +16,7 @@ namespace Base {
         return data.size() - writeIndex;
     }
 
-    void Buffer::MakeSapce(int len) {
+    void Buffer::MakeSpace(int len) {
         if (WriteableBytes() + readIndex < len + 8) {
             data.resize(writeIndex + len);
         } else {
@@ -42,7 +42,7 @@ namespace Base {
 
     void Buffer::Append(const std::string &newData) {
         if (WriteableBytes() < newData.size())
-            MakeSapce(newData.size());
+            MakeSpace(newData.size());
         std::copy(newData.data(), newData.data() + newData.size(), data.begin() + writeIndex);
         writeIndex += newData.size();
     }
@@ -55,6 +55,16 @@ namespace Base {
         std::copy(data.begin() + headIndex, data.begin() + nextHeadIndex, pack.begin());
         readIndex += pack.size();
         std::string res(&(*pack.begin()), pack.size());
+        return res;
+    }
+
+    std::string Buffer::GetAll() {
+        std::string res(&(*(data.begin() + 8)), data.size());
+        data.clear();
+        headIndex = 0;
+        nextHeadIndex = 0;
+        readIndex = 8;
+        writeIndex = 8;
         return res;
     }
 

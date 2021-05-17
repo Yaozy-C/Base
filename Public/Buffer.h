@@ -10,15 +10,17 @@
 #include <string>
 
 namespace Base {
-    static const size_t InitSzie = 1024;
+    static const size_t InitSize = 1024;
 
     class Buffer {
     public:
-        explicit Buffer(size_t initSzie = InitSzie);
+        explicit Buffer(size_t initSize = InitSize);
 
         void Append(const std::string &newData);
 
         std::string GetPackage();
+
+        std::string GetAll();
 
         void SetHead(const std::string &head);
 
@@ -27,7 +29,7 @@ namespace Base {
 
         void GetHeadIndex();
 
-        void MakeSapce(int len);
+        void MakeSpace(int len);
 
         std::vector<char> data;
         std::vector<char> head;

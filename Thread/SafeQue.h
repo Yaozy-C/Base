@@ -22,10 +22,27 @@ namespace Base {
             return stat;
         }
 
+        Queue()=default;
+
+        Queue( std::queue<T> &&que){
+            myQue = que;
+        };
+
         int Size() {
             std::unique_lock<std::mutex> lock(queLock);
             int size = myQue.size();
             return size;
+        }
+
+        std::queue<T> &Get(){
+            std::unique_lock<std::mutex> lock(queLock);
+            return myQue;
+        }
+
+        void Swap(std::queue<T> &temp) {
+            std::unique_lock<std::mutex> lock(queLock);
+            myQue.swap(temp);
+            return ;
         }
 
         void Enque(T &t) {
