@@ -7,13 +7,12 @@
 
 using namespace Base::Net::Tcp;
 
-ConnectManager::ConnectManager(const std::shared_ptr<IndependentThreadPool> &pool) : id_(0), eventPool(pool) {
+ConnectManager::ConnectManager(const std::shared_ptr<IndependentThreadPool> &pool) : eventPool(pool), id_(0) {
 
     for (int i = 0; i < pool->GetSize(); ++i) {
         std::shared_ptr<Sockets::Epoll> epoll(new Sockets::Epoll);
         epolls.emplace_back(epoll);
     }
-
     eventPool->GetIndependentTimeLoop()->AddTaskAt(std::bind(&ConnectManager::EventLoop, this));
 
 }
@@ -24,7 +23,7 @@ ConnectManager::NewConnection(int fd, const Sockets::InetAddress &peerAddr, cons
     auto ep = epolls[id_ % epolls.size()];
     auto loop = eventPool->GetIndependentThreadVoid(id_);
 
-    std::shared_ptr<int> tie (new int(1));
+    std::shared_ptr<int> tie(new int(1));
 
     std::shared_ptr<Connection> ptr(new Connection(fd, id_, localAddr, peerAddr, loop));
     ptr->SetDisConnect(
@@ -44,10 +43,11 @@ ConnectManager::NewConnection(int fd, const Sockets::InetAddress &peerAddr, cons
 
 void ConnectManager::RemoveConnection(int fd, int index) {
     epolls[index % epolls.size()]->DELEvent(fd);
+    std::unique_lock<std::mutex> lock(mtx_);
     auto iter2 = ties_.find(fd);
     if (iter2 != ties_.end()) {
-        std::unique_lock<std::mutex> lock(mtx_);
         ties_.erase(iter2);
+//        eventPool->GetIndependentThreadVoid(index)->Cancel(index);
         eventPool->GetIndependentThreadVoid(index)->AddTask(std::bind(&ConnectManager::RemoveInLoop, this, fd, index));
     }
 
@@ -55,9 +55,9 @@ void ConnectManager::RemoveConnection(int fd, int index) {
 
 void ConnectManager::RemoveInLoop(int fd, int index) {
     epolls[index % epolls.size()]->DELEvent(fd);
+    std::unique_lock<std::mutex> lock(mtx_);
     auto iter = connections_.find(fd);
-    if (iter!=connections_.end()) {
-        std::unique_lock<std::mutex> lock(mtx_);
+    if (iter != connections_.end()) {
         connections_.erase(iter);
     }
 
@@ -87,7 +87,6 @@ void ConnectManager::EventLoop() {
 
     for (int i = 0; i < epolls.size(); ++i) {
         eventPool->GetIndependentThreadVoid(i)->AddTask(std::bind(&ConnectManager::WaitLoop, this, epolls[i]));
-//        eventPool->GetIndependentTimeLoop()->AddTaskAt(std::bind(&ConnectManager::WaitLoop, this, epolls[i]));
     }
     LOG_DEBUG(std::to_string(connections_.size()));
     eventPool->GetIndependentTimeLoop()->AddTaskAt(std::bind(&ConnectManager::EventLoop, this));

@@ -12,7 +12,6 @@
 #include <functional>
 #include <set>
 #include <map>
-#include <iostream>
 #include "SafeQue.h"
 
 namespace Base {
@@ -77,7 +76,6 @@ namespace Base {
         std::mutex mtx;
         std::condition_variable _cv;
         std::atomic<bool> _shutdown;
-//        Base::Queue<std::function<void()>> _tasks;
         std::vector<std::function<void()>> _tasks;
     public:
 
@@ -149,8 +147,7 @@ namespace Base {
 //        std::mutex mtx;
 //        std::condition_variable _cv;
 //        std::atomic<bool> _shutdown;
-////        Base::Queue<std::function<void()>> _tasks;
-//        std::map<int,Base::Queue<std::function<void()>>> _tasks;
+//        std::map<int, std::vector<std::function<void()>>> _tasks;
 //    public:
 //
 //        IndependentThreadVoid() : _shutdown(false) {
@@ -161,23 +158,27 @@ namespace Base {
 //
 //        virtual void Execute() {
 //            while (!_shutdown) {
-//                std::unique_lock<std::mutex> _lock(mtx);
-//                while (_tasks.empty()) {
-//                    if (_shutdown) {
-//                        return;
+//                {
+//                    std::unique_lock<std::mutex> _lock(mtx);
+//                    while (_tasks.empty()) {
+//                        if (_shutdown) {
+//                            return;
+//                        }
+//                        _cv.wait(_lock);
 //                    }
-//                    _cv.wait(_lock);
 //                }
-//                _lock.unlock();
 //
-//                std::function<void()> task;
-//                for (int i = 0; i < _tasks.size(); ++i) {
-//                    _lock.lock();
-//                    Queue<std::function<void ()>> tasks(_tasks[i].Swap());
-//                    _lock.unlock();
-//                    for (int j = 0; j < tasks.Size(); ++j) {
-//                        if (tasks.Deque(task))
-//                            task();
+//                std::vector<std::function<void()>> tasks;
+//                {
+//                    for (int i = 0; i < _tasks.size(); ++i) {
+//                        {
+//                            std::unique_lock<std::mutex> _lock(mtx);
+//                            _tasks[i].swap(tasks);
+//                        }
+//                        std::function<void()> task;
+//                        for (int j = 0; j < tasks.size(); ++j) {
+//                            tasks[j]();
+//                        }
 //                    }
 //                }
 //
@@ -196,10 +197,9 @@ namespace Base {
 //        };
 //
 //        void Cancel(const int &index) {
-//            std::cout<<"Cancel:"<<index<<std::endl;
+//            std::unique_lock<std::mutex> lock(mtx);
 //            auto iter = _tasks.find(index);
 //            if (iter!=_tasks.end()) {
-//                std::unique_lock<std::mutex> lock(mtx);
 //                _tasks.erase(iter);
 //            }
 //        }
@@ -211,7 +211,10 @@ namespace Base {
 //            std::function<void()> func = [ptr]() {
 //                (*ptr)();
 //            };
-//            _tasks[index].Enque(func);
+//            {
+//                std::unique_lock<std::mutex> _lock(mtx);
+//                _tasks[index].emplace_back(func);
+//            }
 //            _cv.notify_one();
 //        }
 //    };

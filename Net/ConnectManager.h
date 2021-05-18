@@ -29,7 +29,6 @@ namespace Base {
 
                 int ModConnection(int fd, int index, int opt);
 
-
             private:
 
                 void RemoveInLoop(int fd, int index);
