@@ -50,7 +50,6 @@ void ConnectManager::RemoveConnection(int fd, int index) {
 //        eventPool->GetIndependentThreadVoid(index)->Cancel(index);
         eventPool->GetIndependentThreadVoid(index)->AddTask(std::bind(&ConnectManager::RemoveInLoop, this, fd, index));
     }
-
 }
 
 void ConnectManager::RemoveInLoop(int fd, int index) {

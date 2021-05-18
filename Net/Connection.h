@@ -30,11 +30,11 @@ namespace Base {
 
                 ~Connection();
 
-                void Send(const std::string &message);
+                int Send(const std::string &message);
 
                 void ShutDown();
 
-                void Read();
+                int Read();
 
                 void SetTie(const std::shared_ptr<int> &tie);
 

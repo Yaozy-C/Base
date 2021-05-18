@@ -35,45 +35,48 @@ Connection::Connection(int sockfd, const int &index, const Sockets::InetAddress 
     socket_->SetKeepAlive(true);
 }
 
-Connection::~Connection() =default ;
+Connection::~Connection() = default;
 
-void Connection::Send(const std::string &message) {
+int Connection::Send(const std::string &message) {
 
-    if (message.length() >= 0) {
-
-        size_t size = SocketOpt::Write(socket_->GetFd(), message.data(), message.size());
-        if (size >= 0) {
-
-
-//            LOG_DEBUG("Send:" + message);
-        } else {
-            if (errno != EWOULDBLOCK) {
-                if (errno == EPIPE || errno == ECONNRESET ) {
-                    LOG_DEBUG("Send: EPIPE :" + message);
-
-                }
-            }
-        }
+    size_t left = message.size();
+    size_t wd = 0;
+    size_t size = 0;
+    while ((size = SocketOpt::Write(socket_->GetFd(), message.data() + wd, left)) > 0) {
+        left -= size;
+        wd += size;
     }
+
+    if (left == 0) {
+        return 1;
+    }
+    if (size < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+        return 1;
+    }
+
+    if (size <= 0) {
+        return -1;
+    }
+
+    return 0;
 }
 
 
-void Connection::Read() {
-    char extrabuf[65536];
-
-    while (true) {
-        const ssize_t n = SocketOpt::Read(socket_->GetFd(), extrabuf, 65536);
-        if (n <= 0) {
-            return;
-        } else {
-
-            std::string a(extrabuf);
-//            LOG_DEBUG("recv: " + std::to_string(a.length()) + " " + a);
-        }
+int Connection::Read() {
+    char buf[4096];
+    std::string data;
+    ssize_t size = 0;
+    while ((size = SocketOpt::Read(socket_->GetFd(), buf, 4096)) > 0) {
+        data.append(buf, size);
     }
-
-    //TODO
-
+    if (size < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+        //todo
+        return 0;
+    }
+    if (size < 0) {
+        LOG_DEBUG("read err :" + std::to_string(SocketOpt::GetSocketError(socket_->GetFd())));
+    }
+    return -1;
 }
 
 void Connection::SetDisConnect(const DisConnect &func) {
@@ -127,7 +130,7 @@ void Connection::LoopInThread() {
     //fixme bug
 
     std::shared_ptr<int> tie = tie_.lock();
-    if (!tie){
+    if (!tie) {
         return;
     }
 
@@ -145,16 +148,31 @@ void Connection::LoopInThread() {
         return;
     }
     if (events_ & (POLLIN | POLLPRI | POLLRDHUP)) {
-        Read();
+        int res = Read();
+        if (res < 0) {
+            ShutDown();
+            return;
+        }
 
-        int res = epollMod_(socket_->GetFd(), index_, POLLOUT);
+        res = epollMod_(socket_->GetFd(), index_, POLLOUT);
         if (res < 0)
             ShutDown();
         return;
     }
     if (events_ & POLLOUT) {
-        Send("123213213213");
-        int res = epollMod_(socket_->GetFd(), index_, POLLIN);
+        int res = Send("1234567890");
+
+        if (res < 0) {
+            ShutDown();
+            return;
+        }
+
+        int events = POLLIN;
+        if (res > 0) {
+            events = POLLOUT;
+        }
+
+        res = epollMod_(socket_->GetFd(), index_, events);
         if (res < 0)
             ShutDown();
     }
@@ -162,7 +180,7 @@ void Connection::LoopInThread() {
 
 void Connection::Loop() {
     std::shared_ptr<int> tie = tie_.lock();
-    if (!tie){
+    if (!tie) {
         return;
     }
     independentThreadVoid_.lock()->AddTask(std::bind(&Connection::LoopInThread, this));
