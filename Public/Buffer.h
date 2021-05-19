@@ -16,6 +16,8 @@ namespace Base {
     public:
         explicit Buffer(size_t initSize = InitSize);
 
+        ~Buffer();
+
         void Append(const std::string &newData);
 
         std::string GetPackage();

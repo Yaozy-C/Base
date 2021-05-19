@@ -3,13 +3,17 @@
 //
 
 #include "Buffer.h"
-
+#include "Log.h"
 namespace Base {
     Buffer::Buffer(size_t initSize) : data(8 + initSize) {
         headIndex = 0;
         nextHeadIndex = 0;
         readIndex = 8;
         writeIndex = 8;
+    }
+
+    Buffer::~Buffer() {
+        LOG_DEBUG("~Buffer");
     }
 
     size_t Buffer::WriteableBytes() const {
@@ -59,7 +63,7 @@ namespace Base {
     }
 
     std::string Buffer::GetAll() {
-        std::string res(&(*(data.begin() + 8)), data.size());
+        std::string res(&(*(data.begin() + 8)), writeIndex);
         data.clear();
         headIndex = 0;
         nextHeadIndex = 0;

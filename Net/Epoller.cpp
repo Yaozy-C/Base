@@ -17,7 +17,7 @@ Epoll::~Epoll() = default;
 
 int Epoll::AddEvent(int fd) {
     struct epoll_event ev{};
-    ev.events = EPOLLIN;
+    ev.events = EPOLLIN | EPOLLET;
     ev.data.fd = fd;
     int res = epoll_ctl(fd_, EPOLL_CTL_ADD, fd, &ev);
     if (res >= 0)

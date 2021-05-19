@@ -9,7 +9,7 @@
 #include <atomic>
 #include <vector>
 #include "InetAddress.h"
-#include "Connection.h"
+#include "CallBack.h"
 #include "Epoller.h"
 #include "../Thread/IndependentThreadPool.h"
 
@@ -29,6 +29,10 @@ namespace Base {
 
                 int ModConnection(int fd, int index, int opt);
 
+                void SetServerOnMessage(const OnMessage &func);
+
+                void ConnectOnMessage(const int &index, const std::shared_ptr<Buffer>&);
+
             private:
 
                 void RemoveInLoop(int fd, int index);
@@ -40,6 +44,7 @@ namespace Base {
                 std::map<int,std::shared_ptr<int>> ties_;
                 std::atomic<int> id_;
                 std::vector<std::shared_ptr<Sockets::Epoll>> epolls;
+                OnMessage onMessage_;
             };
         }
     }

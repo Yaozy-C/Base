@@ -10,6 +10,7 @@
 #include <atomic>
 #include "InetAddress.h"
 #include "Socket.h"
+#include "CallBack.h"
 #include "../Public/Buffer.h"
 #include "../Thread/IndependentThread.h"
 
@@ -18,11 +19,7 @@ namespace Base {
     namespace Net {
         namespace Tcp {
 
-            typedef std::function<void(int, int)> DisConnect;
-
-            typedef std::function<int(int, int, int)> EpollMod;
-
-            class Connection {
+        class Connection: public std::enable_shared_from_this<Connection>{
             public:
                 explicit Connection(int sockfd, const int &index, const Sockets::InetAddress &localAddr,
                                     const Sockets::InetAddress &peerAddr,
@@ -40,6 +37,8 @@ namespace Base {
 
                 void SetDisConnect(const DisConnect &func);
 
+                void SetOnMessage(const ConnOnMessage &func);
+
                 void SetUpdateFunc(const EpollMod &func);
 
                 std::string GetTcpInfo();
@@ -55,17 +54,20 @@ namespace Base {
 
                 void LoopInThread();
 
+                int SendInLoop();
+
                 const int index_;
                 std::unique_ptr<Sockets::Socket> socket_;
                 std::weak_ptr<int> tie_;
                 const Sockets::InetAddress peerAddr_;
                 const Sockets::InetAddress localAddr_;
-                Buffer input_;
-                Buffer output_;
+                std::shared_ptr<Buffer> input_;
+                std::shared_ptr<Buffer> output_;
                 EpollMod epollMod_;
                 DisConnect disConnect_;
                 std::atomic<uint32_t> events_;
                 std::weak_ptr<IndependentThreadVoid> independentThreadVoid_;
+                ConnOnMessage onMessage_;
             };
         }
     }
