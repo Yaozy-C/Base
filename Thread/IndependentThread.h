@@ -21,12 +21,11 @@ namespace Base {
         std::thread _thread;
         std::mutex mtx;
         std::condition_variable _cv;
-
-        bool _shutdown = false;
+        std::vector<T> _tasks;
+        std::atomic<bool> _shutdown;
     public:
-        Base::Queue<T> _tasks;
 
-        IndependentThread() {
+        IndependentThread() : _shutdown(false) {
             _thread = std::thread(&IndependentThread::Execute, this);
         };
 
@@ -34,35 +33,44 @@ namespace Base {
 
         virtual void Execute() {
             while (!_shutdown) {
-                std::unique_lock<std::mutex> _lock(mtx);
-                T task;
-                while (_tasks.Empty()) {
-                    if (_shutdown) {
-                        return;
+                {
+                    std::unique_lock<std::mutex> _lock(mtx);
+                    while (_tasks.empty()) {
+                        if (_shutdown) {
+                            return;
+                        }
+                        _cv.wait(_lock);
                     }
-                    _cv.wait(_lock);
                 }
-                if (_tasks.Deque(task))
-                    Run(task);
-                std::this_thread::sleep_for(std::chrono::microseconds (10));
+
+                std::vector<T> tasks;
+                {
+                    std::unique_lock<std::mutex> _lock(mtx);
+                    _tasks.swap(tasks);
+                }
+
+                for (int i = 0; i < tasks.size(); ++i) {
+                    Run(tasks[i]);
+                }
+                std::this_thread::sleep_for(std::chrono::microseconds(10));
             }
         };
 
         void Shutdown() {
-            while (!_tasks.Empty()) {
+            while (!_tasks.empty()) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
-            {
-                std::unique_lock<std::mutex> lock(mtx);
-                _shutdown = true;
-            }
+            _shutdown = true;
             _cv.notify_all();
             if (_thread.joinable())
                 _thread.join();
         };
 
         void AddTask(T &task) {
-            _tasks.Enque(task);
+            {
+                std::unique_lock<std::mutex> _lock(mtx);
+                _tasks.emplace_back(task);
+            }
             _cv.notify_all();
         };
 
@@ -87,10 +95,7 @@ namespace Base {
 
         virtual void Execute() {
             while (!_shutdown) {
-
-
                 {
-
                     std::unique_lock<std::mutex> _lock(mtx);
                     while (_tasks.empty()) {
                         if (_shutdown) {
@@ -100,13 +105,11 @@ namespace Base {
                     }
                 }
 
-
                 std::vector<std::function<void()>> tasks;
                 {
                     std::unique_lock<std::mutex> _lock(mtx);
                     _tasks.swap(tasks);
                 }
-                std::function<void()> task;
                 for (int i = 0; i < tasks.size(); ++i) {
                     tasks[i]();
                 }
@@ -116,7 +119,7 @@ namespace Base {
 
         void Shutdown() {
             while (!_tasks.empty()) {
-                std::this_thread::sleep_for(std::chrono::seconds (10));
+                std::this_thread::sleep_for(std::chrono::seconds(10));
             }
             _shutdown = true;
             _cv.notify_all();
@@ -139,86 +142,6 @@ namespace Base {
         }
     };
 
-
-
-//    class IndependentThreadVoid {
-//    private:
-//        std::thread _thread;
-//        std::mutex mtx;
-//        std::condition_variable _cv;
-//        std::atomic<bool> _shutdown;
-//        std::map<int, std::vector<std::function<void()>>> _tasks;
-//    public:
-//
-//        IndependentThreadVoid() : _shutdown(false) {
-//            _thread = std::thread(&IndependentThreadVoid::Execute, this);
-//        };
-//
-//        ~IndependentThreadVoid() = default;
-//
-//        virtual void Execute() {
-//            while (!_shutdown) {
-//                {
-//                    std::unique_lock<std::mutex> _lock(mtx);
-//                    while (_tasks.empty()) {
-//                        if (_shutdown) {
-//                            return;
-//                        }
-//                        _cv.wait(_lock);
-//                    }
-//                }
-//
-//                std::vector<std::function<void()>> tasks;
-//                {
-//                    for (int i = 0; i < _tasks.size(); ++i) {
-//                        {
-//                            std::unique_lock<std::mutex> _lock(mtx);
-//                            _tasks[i].swap(tasks);
-//                        }
-//                        std::function<void()> task;
-//                        for (int j = 0; j < tasks.size(); ++j) {
-//                            tasks[j]();
-//                        }
-//                    }
-//                }
-//
-//                std::this_thread::sleep_for(std::chrono::microseconds(1));
-//            }
-//        };
-//
-//        void Shutdown() {
-//            while (!_tasks.empty()) {
-//                std::this_thread::sleep_for(std::chrono::milliseconds(100));
-//            }
-//            _shutdown = true;
-//            _cv.notify_all();
-//            if (_thread.joinable())
-//                _thread.join();
-//        };
-//
-//        void Cancel(const int &index) {
-//            std::unique_lock<std::mutex> lock(mtx);
-//            auto iter = _tasks.find(index);
-//            if (iter!=_tasks.end()) {
-//                _tasks.erase(iter);
-//            }
-//        }
-//
-//        template<class F, class...Args>
-//        void AddTask(const int &index,F &&f, Args &&... args) {
-//            auto ptr = std::make_shared<std::packaged_task<decltype(f(args...))()>>(
-//                    std::bind(std::forward<F>(f), std::forward<Args>(args)...));
-//            std::function<void()> func = [ptr]() {
-//                (*ptr)();
-//            };
-//            {
-//                std::unique_lock<std::mutex> _lock(mtx);
-//                _tasks[index].emplace_back(func);
-//            }
-//            _cv.notify_one();
-//        }
-//    };
-
     class Comp {
     public:
         bool operator()(const std::pair<std::chrono::steady_clock::time_point, int> &x,
@@ -235,7 +158,7 @@ namespace Base {
         std::condition_variable _cv;
 
         std::atomic<bool> _shutdown;
-        std::set<std::pair<std::chrono::steady_clock::time_point, int>,Comp> timer;
+        std::set<std::pair<std::chrono::steady_clock::time_point, int>, Comp> timer;
         std::chrono::microseconds time;
         std::atomic<int> index;
         std::map<int, std::function<void()>> _tasks;
@@ -270,7 +193,7 @@ namespace Base {
 
                 auto now = std::chrono::steady_clock::now();
 
-                for (auto iter = timer.begin(); iter!= timer.end() ; ) {
+                for (auto iter = timer.begin(); iter != timer.end();) {
                     if ((now - iter->first).count() > 0) {
                         _tasks[iter->second]();
                         _tasks.erase(iter->second);
@@ -279,7 +202,7 @@ namespace Base {
                         break;
                 }
 
-                std::this_thread::sleep_for(std::chrono::microseconds (1));
+                std::this_thread::sleep_for(std::chrono::microseconds(1));
             }
         };
 

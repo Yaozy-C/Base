@@ -8,9 +8,6 @@
 
 using namespace Base::Net::Tcp;
 
-namespace {
-    typedef struct sockaddr SA;
-}
 
 void SocketOpt::MemZero(void *p, size_t n) {
     memset(p, 0, n);
@@ -120,7 +117,7 @@ void SocketOpt::Close(int sockfd) {
 
 void SocketOpt::ShutdownWrite(int sockfd) {
     if (::shutdown(sockfd, SHUT_WR) < 0) {
-        perror("err:");
+        perror("SocketOpt::shutdownWrite:");
         LOG_ERROR("SocketOpt::shutdownWrite");
     }
 }

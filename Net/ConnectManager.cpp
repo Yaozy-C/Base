@@ -43,7 +43,6 @@ ConnectManager::NewConnection(int fd, const Sockets::InetAddress &peerAddr, cons
 
 
 void ConnectManager::RemoveConnection(int fd, int index) {
-    epolls[index % epolls.size()]->DELEvent(fd);
     std::unique_lock<std::mutex> lock(mtx_);
     auto iter2 = ties_.find(fd);
     if (iter2 != ties_.end()) {
