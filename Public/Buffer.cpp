@@ -4,6 +4,7 @@
 
 #include "Buffer.h"
 #include "Log.h"
+
 namespace Base {
     Buffer::Buffer(size_t initSize) : data(8 + initSize) {
         headIndex = 0;
@@ -12,9 +13,10 @@ namespace Base {
         writeIndex = 8;
     }
 
-    Buffer::~Buffer() {
-        LOG_DEBUG("~Buffer");
-    }
+//    Buffer::~Buffer() {
+//        LOG_DEBUG("~Buffer");
+//    }
+    Buffer::~Buffer() = default;
 
     size_t Buffer::WriteableBytes() const {
         return data.size() - writeIndex;

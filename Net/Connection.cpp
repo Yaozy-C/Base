@@ -36,9 +36,11 @@ Connection::Connection(int sockfd, const int &index, const Sockets::InetAddress 
     socket_->SetKeepAlive(true);
 }
 
-Connection::~Connection() {
-    LOG_DEBUG("~Connection");
-};
+//Connection::~Connection() {
+//    LOG_DEBUG("~Connection");
+//};
+
+Connection::~Connection() = default;
 
 int Connection::Send(const std::string &message) {
 
@@ -64,7 +66,7 @@ int Connection::Read() {
         return 0;
     }
     if (size == 0) {
-        LOG_DEBUG("read err :" + std::to_string(SocketOpt::GetSocketError(socket_->GetFd())));
+//        LOG_DEBUG("read err :" + std::to_string(SocketOpt::GetSocketError(socket_->GetFd())));
         return -1;
     }
 
