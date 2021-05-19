@@ -31,17 +31,18 @@ namespace Base {
 
                 void SetServerOnMessage(const OnMessage &func);
 
-                void ConnectOnMessage(const int &index, const std::shared_ptr<Buffer>&);
+                void ConnectOnMessage(const int &index, const std::shared_ptr<Buffer> &);
 
             private:
 
                 void RemoveInLoop(int fd, int index);
 
                 void WaitLoop(const std::shared_ptr<Sockets::Epoll> &epoll);
+
                 std::mutex mtx_;
                 std::shared_ptr<IndependentThreadPool> eventPool;
                 std::map<int, std::shared_ptr<Connection>> connections_;
-                std::map<int,std::shared_ptr<int>> ties_;
+                std::map<int, std::shared_ptr<int>> ties_;
                 std::atomic<int> id_;
                 std::vector<std::shared_ptr<Sockets::Epoll>> epolls;
                 OnMessage onMessage_;

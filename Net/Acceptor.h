@@ -29,7 +29,6 @@ namespace Base {
 
                 void SetNewConnectCallBack(const NewConnectionCallback &func);
 
-
             private:
                 Sockets::Socket acceptSocket;
                 int nullFd;

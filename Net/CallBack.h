@@ -14,8 +14,8 @@ namespace Base {
         namespace Tcp {
             class Connection;
 
-            typedef std::function<void(const std::shared_ptr<Connection>&, const std::shared_ptr<Buffer>&)> OnMessage;
-            typedef std::function<void(const int&, const std::shared_ptr<Buffer>&)> ConnOnMessage;
+            typedef std::function<void(const std::shared_ptr<Connection> &, const std::shared_ptr<Buffer> &)> OnMessage;
+            typedef std::function<void(const int &, const std::shared_ptr<Buffer> &)> ConnOnMessage;
             typedef std::function<void(int, int)> DisConnect;
 
             typedef std::function<int(int, int, int)> EpollMod;

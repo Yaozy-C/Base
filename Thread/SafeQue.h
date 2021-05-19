@@ -22,9 +22,9 @@ namespace Base {
             return stat;
         }
 
-        Queue()=default;
+        Queue() = default;
 
-        Queue( std::queue<T> &&que){
+        Queue(std::queue<T> &&que) {
             myQue = que;
         };
 
@@ -34,7 +34,7 @@ namespace Base {
             return size;
         }
 
-        std::queue<T> &Get(){
+        std::queue<T> &Get() {
             std::unique_lock<std::mutex> lock(queLock);
             return myQue;
         }
@@ -42,7 +42,7 @@ namespace Base {
         void Swap(std::queue<T> &temp) {
             std::unique_lock<std::mutex> lock(queLock);
             myQue.swap(temp);
-            return ;
+            return;
         }
 
         void Enque(T &t) {

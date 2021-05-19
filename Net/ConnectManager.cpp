@@ -30,11 +30,13 @@ ConnectManager::NewConnection(int fd, const Sockets::InetAddress &peerAddr, cons
         ties_[fd] = tie;
         connections_[fd].reset(new Connection(fd, id_, localAddr, peerAddr, loop));
     }
-    connections_[fd]->SetOnMessage(std::bind(&ConnectManager::ConnectOnMessage,this,std::placeholders::_1,std::placeholders::_2));
+    connections_[fd]->SetOnMessage(
+            std::bind(&ConnectManager::ConnectOnMessage, this, std::placeholders::_1, std::placeholders::_2));
     connections_[fd]->SetDisConnect(
             std::bind(&ConnectManager::RemoveConnection, this, std::placeholders::_1, std::placeholders::_2));
-    connections_[fd]->SetUpdateFunc(std::bind(&ConnectManager::ModConnection, this, std::placeholders::_1, std::placeholders::_2,
-                                 std::placeholders::_3));
+    connections_[fd]->SetUpdateFunc(
+            std::bind(&ConnectManager::ModConnection, this, std::placeholders::_1, std::placeholders::_2,
+                      std::placeholders::_3));
     connections_[fd]->SetTie(tie);
 
     loop->AddTask(std::bind(&Sockets::Epoll::AddEvent, ep, fd));
@@ -73,11 +75,11 @@ void ConnectManager::SetServerOnMessage(const OnMessage &func) {
     onMessage_ = func;
 }
 
-void ConnectManager::ConnectOnMessage(const int & index , const std::shared_ptr<Buffer> &buffer) {
+void ConnectManager::ConnectOnMessage(const int &index, const std::shared_ptr<Buffer> &buffer) {
     std::unique_lock<std::mutex> lock(mtx_);
     auto iter = connections_.find(index);
     if (iter != connections_.end()) {
-        onMessage_(connections_[index],buffer);
+        onMessage_(connections_[index], buffer);
     }
 }
 

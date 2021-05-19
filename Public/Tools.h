@@ -8,7 +8,9 @@
 #include <fstream>
 #include <sstream>
 #include <sys/stat.h>
+
 std::string ReadFile(const std::string &file);
 
 long long FileSize(const std::string &filepath);
+
 #endif //BASE_TOOLS_H

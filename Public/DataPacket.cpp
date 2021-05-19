@@ -3,6 +3,7 @@
 //
 #include "DataPacket.h"
 #include "Log.h"
+
 namespace Base {
 
     void GetJsonValue(cJSON *node, string &value) {

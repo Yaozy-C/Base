@@ -19,7 +19,7 @@ namespace Base {
     namespace Net {
         namespace Tcp {
 
-        class Connection: public std::enable_shared_from_this<Connection>{
+            class Connection : public std::enable_shared_from_this<Connection> {
             public:
                 explicit Connection(int sockfd, const int &index, const Sockets::InetAddress &localAddr,
                                     const Sockets::InetAddress &peerAddr,

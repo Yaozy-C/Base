@@ -10,7 +10,7 @@
 using namespace Base::Net::Tcp;
 
 TcpServer::TcpServer(const Sockets::InetAddress &localAddr) : localAddr_(localAddr),
-    independentThreadPool(new IndependentThreadPool(3, 2)) {
+                                                              independentThreadPool(new IndependentThreadPool(3, 2)) {
 
     fd_ = SocketOpt::CreateNoBlock(localAddr_.Family());
 
