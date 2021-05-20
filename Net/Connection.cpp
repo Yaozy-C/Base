@@ -30,8 +30,8 @@ Connection::Connection(int sockfd, const int &index, const Sockets::InetAddress 
         index_(index), peerAddr_(peerAddr), localAddr_(localAddr), events_(0), input_(new Buffer),
         output_(new Buffer) {
 
-    input_->SetHead(std::string("2"));
-    output_->SetHead(std::string("2"));
+//    input_->SetHead("1");
+//    output_->SetHead("1");
     independentThreadVoid_ = independentThreadVoid;
     socket_->SetKeepAlive(true);
 }
@@ -44,7 +44,7 @@ Connection::~Connection() = default;
 
 int Connection::Send(const std::string &message) {
 
-    output_->Append(message);
+    output_->readFd(message);
     int res = epollMod_(socket_->GetFd(), index_, EPOLLOUT | EPOLLET);
     if (res < 0)
         ShutDown();
@@ -52,14 +52,14 @@ int Connection::Send(const std::string &message) {
 }
 
 int Connection::Read() {
-    char buf[4096];
+    char buf[65535];
     std::string data;
     ssize_t size = 0;
-    while ((size = SocketOpt::Read(socket_->GetFd(), buf, 4096)) > 0) {
+    while ((size = SocketOpt::Read(socket_->GetFd(), buf, 65535)) > 0) {
         data.append(buf, size);
     }
     if (size < 0 && errno == EAGAIN) {
-        input_->Append(data);
+        input_->readFd(data);
         if (onMessage_) {
             onMessage_(socket_->GetFd(), input_);
         }
@@ -123,7 +123,7 @@ int EventsToString(uint32_t ev) {
 }
 
 int Connection::SendInLoop() {
-    std::string message = output_->GetPackage();
+    std::string message = output_->retrieveAllAsString();
     size_t left = message.size();
     size_t wd = 0;
     size_t size = 0;

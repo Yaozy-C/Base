@@ -10,7 +10,7 @@
 using namespace Base::Net::Tcp;
 
 TcpServer::TcpServer(const Sockets::InetAddress &localAddr) : localAddr_(localAddr),
-                                                              independentThreadPool(new IndependentThreadPool(3, 2)) {
+                                                              independentThreadPool(new IndependentThreadPool(3, 1)) {
 
     fd_ = SocketOpt::CreateNoBlock(localAddr_.Family());
 
@@ -51,7 +51,7 @@ void TcpServer::NewConnection(int fd, const Sockets::InetAddress &peerAddr) {
 
 void TcpServer::OnMessage(const std::shared_ptr<Connection> &connection, const std::shared_ptr<Buffer> &buffer) {
 
-    std::string data = buffer->GetPackage();
+    std::string data = buffer->retrieveAllAsString();
 //    LOG_DEBUG(data);
     connection->Send(data);
 }

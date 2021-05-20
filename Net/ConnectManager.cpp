@@ -61,9 +61,9 @@ void ConnectManager::RemoveInLoop(int fd, int index) {
         connections_.erase(iter);
     }
 
-//    if (connections_.empty()) {
-//        LOG_DEBUG("empty");
-//    }
+    if (connections_.empty()) {
+        LOG_DEBUG("empty");
+    }
 }
 
 int ConnectManager::ModConnection(int fd, int index, int opt) {
