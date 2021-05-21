@@ -25,9 +25,6 @@ namespace Base {
 
                 void Loop();
 
-                void NewConnection(int fd, const Sockets::InetAddress &peerAddr);
-
-
                 void OnMessage(const std::shared_ptr<Connection> &connection, const std::shared_ptr<Buffer> &buffer);
 
             private:

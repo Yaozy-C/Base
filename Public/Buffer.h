@@ -215,7 +215,7 @@ namespace Base {
         }
 
 
-        ssize_t readFd(const std::string &data);
+        ssize_t readFd(const char *data, size_t len);
 
     private:
 

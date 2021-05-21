@@ -7,9 +7,6 @@
 
 #include <functional>
 #include "Socket.h"
-//#include "InetAddress.h"
-#include "ConnectManager.h"
-
 
 namespace Base {
     namespace Net {

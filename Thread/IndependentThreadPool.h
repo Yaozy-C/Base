@@ -11,7 +11,7 @@ namespace Base {
     class IndependentThreadPool {
     public:
 
-        explicit IndependentThreadPool(int size, const int &microseconds) : size_(size) {
+        explicit IndependentThreadPool(int size) : size_(size) {
 
             for (int i = 0; i < size_; ++i) {
                 std::shared_ptr<IndependentThreadVoid> independentThreadVoid(new IndependentThreadVoid);

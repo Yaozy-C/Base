@@ -39,7 +39,7 @@ Connection::~Connection() = default;
 int Connection::Send(const std::string &message) {
 
     if (!output_->empty()) {
-        output_->readFd(message);
+        output_->readFd(message.data(), message.length());
         int res = epollMod_(socket_->GetFd(), index_, EPOLLOUT | EPOLLET);
         if (res < 0)
             ShutDown();
@@ -59,7 +59,7 @@ int Connection::Send(const std::string &message) {
         return 0;
     }
     if (size < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
-        output_->readFd(std::string(message.data() + wd, left));
+        output_->readFd(message.data() + wd, left);
         int res = epollMod_(socket_->GetFd(), index_, EPOLLOUT | EPOLLET);
         if (res < 0)
             ShutDown();
@@ -79,7 +79,7 @@ int Connection::Read() {
         data.append(buf, size);
     }
     if (size < 0 && errno == EAGAIN) {
-        input_->readFd(data);
+        input_->readFd(data.data(), data.length());
         if (onMessage_) {
             onMessage_(socket_->GetFd(), input_);
         }
@@ -155,7 +155,7 @@ int Connection::SendInLoop() {
         return 0;
     }
     if (size < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
-        output_->readFd(std::string(message.data() + wd, left));
+        output_->readFd(message.data() + wd, left);
         return 1;
     }
 
@@ -165,14 +165,11 @@ int Connection::SendInLoop() {
     return 0;
 }
 
-
-void Connection::LoopInThread() {
-
+void Connection::Loop() {
     std::shared_ptr<int> tie = tie_.lock();
     if (!tie) {
         return;
     }
-
     if ((events_ & EPOLLHUP) && !(events_ & EPOLLIN)) {
         ShutDown();
         return;
@@ -203,14 +200,6 @@ void Connection::LoopInThread() {
         if (res < 0)
             ShutDown();
     }
-}
-
-void Connection::Loop() {
-    std::shared_ptr<int> tie = tie_.lock();
-    if (!tie) {
-        return;
-    }
-    independentThreadVoid_.lock()->AddTask(std::bind(&Connection::LoopInThread, this));
 }
 
 void Connection::ShutDown() {

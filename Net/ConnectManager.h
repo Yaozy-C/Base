@@ -21,11 +21,9 @@ namespace Base {
             public:
                 explicit ConnectManager(const std::shared_ptr<IndependentThreadPool> &pool);
 
-                void NewConnection(int fd, const Sockets::InetAddress &peerAddr, const Sockets::InetAddress &localAddr);
+                void NewConnection(int fd, const Sockets::InetAddress &localAddr, const Sockets::InetAddress &peerAddr);
 
                 void RemoveConnection(int fd, int index);
-
-                void EventLoop();
 
                 int ModConnection(int fd, int index, int opt);
 
@@ -35,18 +33,22 @@ namespace Base {
 
             private:
 
+//                void Read(int fd);
+//                void Wake(int fd);
+
                 void RemoveInLoop(int fd, int index);
 
                 void WaitLoop(const std::shared_ptr<Sockets::Epoll> &epoll);
 
                 std::mutex mtx_;
-                std::shared_ptr<IndependentThreadPool> eventPool;
+                std::shared_ptr<IndependentThreadPool> loops_;
 
                 std::shared_ptr<IndependentThreadVoid> independentThreadVoid;
                 std::map<int, std::shared_ptr<Connection>> connections_;
                 std::map<int, std::shared_ptr<int>> ties_;
                 std::atomic<int> id_;
                 std::vector<std::shared_ptr<Sockets::Epoll>> epolls;
+                std::vector<int> efds_;
                 OnMessage onMessage_;
             };
         }

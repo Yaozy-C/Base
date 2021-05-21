@@ -6,7 +6,6 @@
 #include <cassert>
 #include <functional>
 #include "Acceptor.h"
-#include "../Public/Log.h"
 
 using namespace Base::Net::Tcp;
 
@@ -37,7 +36,6 @@ void Acceptor::HandleRead() {
     int connfd = acceptSocket.Accept(&peerAddr);
     if (connfd >= 0) {
         std::string hostport = peerAddr.ToIpPort();
-        LOG_DEBUG("Accepts of " + hostport);
         if (func_) {
             func_(connfd, peerAddr);
         } else {

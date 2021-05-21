@@ -49,10 +49,7 @@ namespace Base {
 
                 void Loop();
 
-
             private:
-
-                void LoopInThread();
 
                 int SendInLoop();
 

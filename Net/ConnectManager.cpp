@@ -2,26 +2,39 @@
 // Created by Yaozy on 2021/5/12.
 //
 
+#include <sys/eventfd.h>
 #include "ConnectManager.h"
 #include "Connection.h"
 #include "../Public/Log.h"
 
 using namespace Base::Net::Tcp;
 
-ConnectManager::ConnectManager(const std::shared_ptr<IndependentThreadPool> &pool) : eventPool(pool), id_(0) {
+ConnectManager::ConnectManager(const std::shared_ptr<IndependentThreadPool> &pool) : loops_(pool), id_(0) {
     for (int i = 0; i < pool->GetSize(); ++i) {
         std::shared_ptr<Sockets::Epoll> epoll(new Sockets::Epoll);
         epolls.emplace_back(epoll);
+
+//        int fd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
+//        if (fd < 0)
+//            abort();
+//        efds_.emplace_back(fd);
+//        epoll->AddEvent(fd);
     }
-    independentThreadVoid = eventPool->GetIndependentThreadVoid(0);
-    independentThreadVoid->AddTask(std::bind(&ConnectManager::EventLoop, this));
+
+
+    independentThreadVoid = loops_->GetIndependentThreadVoid(0);
 }
 
 void
-ConnectManager::NewConnection(int fd, const Sockets::InetAddress &peerAddr, const Sockets::InetAddress &localAddr) {
+ConnectManager::NewConnection(int fd, const Sockets::InetAddress &localAddr, const Sockets::InetAddress &peerAddr) {
 
-    auto ep = epolls[id_ % epolls.size()];
-    auto loop = eventPool->GetIndependentThreadVoid(id_);
+    int index = id_ % epolls.size();
+    auto ep = epolls[index];
+    auto loop = loops_->GetIndependentThreadVoid(id_);
+    if (!ep->Looping()){
+        ep->SetIndependentThreadVoid(loop);
+        loop->AddTask(std::bind(&ConnectManager::WaitLoop, this, ep));
+    }
 
     std::shared_ptr<int> tie(new int(1));
 
@@ -40,6 +53,7 @@ ConnectManager::NewConnection(int fd, const Sockets::InetAddress &peerAddr, cons
     connections_[fd]->SetTie(tie);
 
     loop->AddTask(std::bind(&Sockets::Epoll::AddEvent, ep, fd));
+//    Wake(efds_[index]);
     id_++;
 }
 
@@ -49,7 +63,7 @@ void ConnectManager::RemoveConnection(int fd, int index) {
     auto iter2 = ties_.find(fd);
     if (iter2 != ties_.end()) {
         ties_.erase(iter2);
-        eventPool->GetIndependentThreadVoid(index)->AddTask(std::bind(&ConnectManager::RemoveInLoop, this, fd, index));
+        loops_->GetIndependentThreadVoid(index)->AddTask(std::bind(&ConnectManager::RemoveInLoop, this, fd, index));
     }
 }
 
@@ -63,7 +77,8 @@ void ConnectManager::RemoveInLoop(int fd, int index) {
 }
 
 int ConnectManager::ModConnection(int fd, int index, int opt) {
-    auto ep = epolls[index % epolls.size()];
+    int newIndex = index % epolls.size();
+    auto ep = epolls[newIndex];
     return ep->MODEvent(fd, opt);
 }
 
@@ -79,22 +94,25 @@ void ConnectManager::ConnectOnMessage(const int &index, const std::shared_ptr<Bu
     }
 }
 
+//void ConnectManager::Wake(int fd) {
+//    uint64_t one = 1;
+//    ssize_t n = SocketOpt::Write(fd, &one, sizeof one);
+//}
+//
+//void ConnectManager::Read(int fd) {
+//    uint64_t one = 1;
+//    ssize_t n = SocketOpt::Read(fd, &one, sizeof one);
+//}
+
 void ConnectManager::WaitLoop(const std::shared_ptr<Sockets::Epoll> &epoll) {
     int size = epoll->GetSize();
     std::vector<struct epoll_event> events;
     events.resize(size);
-    int num = epoll->Wait(size, events);
+    int num = epoll->Wait(size, events, 0);
     for (int i = 0; i < num; ++i) {
         auto cn = connections_[events[i].data.fd];
         cn->SetEvent(events[i].events);
         cn->Loop();
     }
-}
-
-void ConnectManager::EventLoop() {
-
-    for (int i = 0; i < epolls.size(); ++i) {
-        eventPool->GetIndependentThreadVoid(i)->AddTask(std::bind(&ConnectManager::WaitLoop, this, epolls[i]));
-    }
-    independentThreadVoid->AddTask(std::bind(&ConnectManager::EventLoop, this));
+    epoll->GetLoop()->AddTask(std::bind(&ConnectManager::WaitLoop, this, epoll));
 }

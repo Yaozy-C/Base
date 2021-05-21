@@ -85,19 +85,17 @@ namespace Base {
     const size_t Buffer::kCheapPrepend;
     const size_t Buffer::kInitialSize;
 
-    ssize_t Buffer::readFd(const std::string& data) {
+    ssize_t Buffer::readFd(const char *data, size_t len) {
 
-        int n = data.size();
         const size_t writable = writableBytes();
 
-         if (n <= writable) {
-             std::copy(data.begin(),data.end(),buffer_.begin()+writerIndex_);
-
-             writerIndex_ += n;
+        if (len <= writable) {
+            std::copy(data, data+len,buffer_.begin() + writerIndex_);
+            writerIndex_ += len;
         } else {
             writerIndex_ = buffer_.size();
-            append(data.data(), n - writable);
+            append(data, len - writable);
         }
-        return n;
+        return len;
     }
 }
