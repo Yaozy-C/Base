@@ -10,10 +10,10 @@
 using namespace Base::Net::Tcp;
 
 TcpServer::TcpServer(const Sockets::InetAddress &localAddr) : localAddr_(localAddr),
-                                                              independentThreadPool(new IndependentThreadPool(3, 1)) {
+                                                              independentThreadPool(new IndependentThreadPool(1, 1)) {
 
     fd_ = SocketOpt::CreateNoBlock(localAddr_.Family());
-
+    independentThreadVoid = independentThreadPool->GetIndependentThreadVoid(0);
 }
 
 TcpServer::~TcpServer() {
@@ -31,7 +31,7 @@ void TcpServer::Start() {
                                            std::placeholders::_2);
     acceptor_->SetNewConnectCallBack(func);
     ep_.AddEvent(fd_);
-    independentThreadPool->GetIndependentTimeLoop()->AddTaskAt(std::bind(&TcpServer::Loop, this));
+    independentThreadVoid->AddTask(std::bind(&TcpServer::Loop, this));
 }
 
 void TcpServer::Loop() {
@@ -42,7 +42,7 @@ void TcpServer::Loop() {
         acceptor_->HandleRead();
         ep_.MODEvent(fd_, EPOLLIN);
     }
-    independentThreadPool->GetIndependentTimeLoop()->AddTaskAt(std::bind(&TcpServer::Loop, this));
+    independentThreadVoid->AddTask(std::bind(&TcpServer::Loop, this));
 }
 
 void TcpServer::NewConnection(int fd, const Sockets::InetAddress &peerAddr) {

@@ -17,22 +17,14 @@ namespace Base {
                 std::shared_ptr<IndependentThreadVoid> independentThreadVoid(new IndependentThreadVoid);
                 independentVoids[i] = independentThreadVoid;
             }
-
-            independentThreadTimeLoop.reset(new IndependentThreadTimeLoop(microseconds));
         };
 
         ~IndependentThreadPool() {
-
-            independentThreadTimeLoop->Shutdown();
 
             for (auto &independentVoid : independentVoids) {
                 independentVoid.second->Shutdown();
             }
         };
-
-        std::shared_ptr<IndependentThreadTimeLoop> GetIndependentTimeLoop() {
-            return independentThreadTimeLoop;
-        }
 
         std::shared_ptr<IndependentThreadVoid> GetIndependentThreadVoid(const int &index) {
             return independentVoids[index % size_];
@@ -44,7 +36,6 @@ namespace Base {
 
     private:
         std::map<int, std::shared_ptr<IndependentThreadVoid>> independentVoids;
-        std::shared_ptr<IndependentThreadTimeLoop> independentThreadTimeLoop;
         int size_;
     };
 }

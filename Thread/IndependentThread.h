@@ -113,7 +113,6 @@ namespace Base {
                 for (int i = 0; i < tasks.size(); ++i) {
                     tasks[i]();
                 }
-//                std::this_thread::sleep_for(std::chrono::microseconds(1));
             }
         };
 
@@ -182,15 +181,6 @@ namespace Base {
                     _cv.wait(_lock);
                 }
 
-                /*auto iter = timer.lower_bound(std::pair<std::chrono::steady_clock::time_point, int>(
-                        std::chrono::steady_clock::now(), 1));
-
-                for (auto begin = timer.begin(); begin != iter;) {
-                    _tasks[begin->second]();
-                    _tasks.erase(begin->second);
-                    begin = timer.erase(begin);
-                }*/
-
                 auto now = std::chrono::steady_clock::now();
 
                 for (auto iter = timer.begin(); iter != timer.end();) {
@@ -201,8 +191,6 @@ namespace Base {
                     } else
                         break;
                 }
-
-//                std::this_thread::sleep_for(std::chrono::microseconds(1));
             }
         };
 

@@ -41,6 +41,8 @@ namespace Base {
 
                 std::mutex mtx_;
                 std::shared_ptr<IndependentThreadPool> eventPool;
+
+                std::shared_ptr<IndependentThreadVoid> independentThreadVoid;
                 std::map<int, std::shared_ptr<Connection>> connections_;
                 std::map<int, std::shared_ptr<int>> ties_;
                 std::atomic<int> id_;

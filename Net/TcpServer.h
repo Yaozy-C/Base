@@ -36,6 +36,8 @@ namespace Base {
                 Sockets::Epoll ep_;
                 const Sockets::InetAddress localAddr_;
                 std::shared_ptr<Base::IndependentThreadPool> independentThreadPool;
+
+                std::shared_ptr<Base::IndependentThreadVoid> independentThreadVoid;
                 std::shared_ptr<Acceptor> acceptor_;
                 std::shared_ptr<ConnectManager> connectManager_;
             };

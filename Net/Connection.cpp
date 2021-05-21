@@ -30,23 +30,43 @@ Connection::Connection(int sockfd, const int &index, const Sockets::InetAddress 
         index_(index), peerAddr_(peerAddr), localAddr_(localAddr), events_(0), input_(new Buffer),
         output_(new Buffer) {
 
-//    input_->SetHead("1");
-//    output_->SetHead("1");
     independentThreadVoid_ = independentThreadVoid;
     socket_->SetKeepAlive(true);
 }
-
-//Connection::~Connection() {
-//    LOG_DEBUG("~Connection");
-//};
 
 Connection::~Connection() = default;
 
 int Connection::Send(const std::string &message) {
 
-    output_->readFd(message);
-    int res = epollMod_(socket_->GetFd(), index_, EPOLLOUT | EPOLLET);
-    if (res < 0)
+    if (!output_->empty()) {
+        output_->readFd(message);
+        int res = epollMod_(socket_->GetFd(), index_, EPOLLOUT | EPOLLET);
+        if (res < 0)
+            ShutDown();
+        return 0;
+    }
+
+    size_t left = message.size();
+    size_t wd = 0;
+    size_t size = SocketOpt::Write(socket_->GetFd(), message.data() + wd, left);
+    left -= size;
+    wd += size;
+
+    if (left == 0) {
+        int res = epollMod_(socket_->GetFd(), index_, EPOLLIN | EPOLLET);
+        if (res < 0)
+            ShutDown();
+        return 0;
+    }
+    if (size < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+        output_->readFd(std::string(message.data() + wd, left));
+        int res = epollMod_(socket_->GetFd(), index_, EPOLLOUT | EPOLLET);
+        if (res < 0)
+            ShutDown();
+        return 0;
+    }
+
+    if (size <= 0)
         ShutDown();
     return 0;
 }
@@ -66,7 +86,6 @@ int Connection::Read() {
         return 0;
     }
     if (size == 0) {
-//        LOG_DEBUG("read err :" + std::to_string(SocketOpt::GetSocketError(socket_->GetFd())));
         return -1;
     }
 
@@ -136,6 +155,7 @@ int Connection::SendInLoop() {
         return 0;
     }
     if (size < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+        output_->readFd(std::string(message.data() + wd, left));
         return 1;
     }
 
@@ -157,10 +177,6 @@ void Connection::LoopInThread() {
         ShutDown();
         return;
     }
-
-//    if (events_ & POLLNVAL) {
-//        return;
-//    }
 
     if (events_ & (EPOLLERR)) {
         ShutDown();

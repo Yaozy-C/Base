@@ -9,12 +9,12 @@
 using namespace Base::Net::Tcp;
 
 ConnectManager::ConnectManager(const std::shared_ptr<IndependentThreadPool> &pool) : eventPool(pool), id_(0) {
-
     for (int i = 0; i < pool->GetSize(); ++i) {
         std::shared_ptr<Sockets::Epoll> epoll(new Sockets::Epoll);
         epolls.emplace_back(epoll);
     }
-    eventPool->GetIndependentTimeLoop()->AddTaskAt(std::bind(&ConnectManager::EventLoop, this));
+    independentThreadVoid = eventPool->GetIndependentThreadVoid(0);
+    independentThreadVoid->AddTask(std::bind(&ConnectManager::EventLoop, this));
 }
 
 void
@@ -60,10 +60,6 @@ void ConnectManager::RemoveInLoop(int fd, int index) {
     if (iter != connections_.end()) {
         connections_.erase(iter);
     }
-
-    if (connections_.empty()) {
-        LOG_DEBUG("empty");
-    }
 }
 
 int ConnectManager::ModConnection(int fd, int index, int opt) {
@@ -100,6 +96,5 @@ void ConnectManager::EventLoop() {
     for (int i = 0; i < epolls.size(); ++i) {
         eventPool->GetIndependentThreadVoid(i)->AddTask(std::bind(&ConnectManager::WaitLoop, this, epolls[i]));
     }
-//    LOG_DEBUG(std::to_string(connections_.size()));
-    eventPool->GetIndependentTimeLoop()->AddTaskAt(std::bind(&ConnectManager::EventLoop, this));
+    independentThreadVoid->AddTask(std::bind(&ConnectManager::EventLoop, this));
 }
