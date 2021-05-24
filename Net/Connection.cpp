@@ -23,12 +23,12 @@ namespace {
 using namespace Base::Net::Tcp;
 
 
-Connection::Connection(int sockfd, const int &index, const Sockets::InetAddress &localAddr,
+Connection::Connection(int sockfd, const Sockets::InetAddress &localAddr,
                        const Sockets::InetAddress &peerAddr,
                        const std::weak_ptr<IndependentThreadVoid> &independentThreadVoid) :
         socket_(new Sockets::Socket(sockfd)),
-        index_(index), peerAddr_(peerAddr), localAddr_(localAddr), events_(0), input_(new Buffer),
-        output_(new Buffer) {
+        peerAddr_(peerAddr), localAddr_(localAddr), input_(new Buffer),
+        output_(new Buffer), events_(0) {
 
     independentThreadVoid_ = independentThreadVoid;
     socket_->SetKeepAlive(true);
@@ -38,35 +38,9 @@ Connection::~Connection() = default;
 
 int Connection::Send(const std::string &message) {
 
-    if (!output_->empty()) {
-        output_->readFd(message.data(), message.length());
-        int res = epollMod_(socket_->GetFd(),EPOLLOUT | EPOLLET);
-        if (res < 0)
-            ShutDown();
-        return 0;
-    }
-
-    size_t left = message.size();
-    size_t wd = 0;
-    size_t size = SocketOpt::Write(socket_->GetFd(), message.data() + wd, left);
-    left -= size;
-    wd += size;
-
-    if (left == 0) {
-        int res = epollMod_(socket_->GetFd(), EPOLLIN | EPOLLET);
-        if (res < 0)
-            ShutDown();
-        return 0;
-    }
-    if (size < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
-        output_->readFd(message.data() + wd, left);
-        int res = epollMod_(socket_->GetFd(), EPOLLOUT | EPOLLET);
-        if (res < 0)
-            ShutDown();
-        return 0;
-    }
-
-    if (size <= 0)
+    output_->append(message.data(), message.size());
+    int res = epollMod_(socket_->GetFd(), EPOLLOUT | EPOLLET);
+    if (res < 0)
         ShutDown();
     return 0;
 }

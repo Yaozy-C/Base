@@ -47,6 +47,5 @@ void TcpServer::Loop() {
 void TcpServer::OnMessage(const std::shared_ptr<Connection> &connection, const std::shared_ptr<Buffer> &buffer) {
 
     std::string data = buffer->retrieveAllAsString();
-//    LOG_DEBUG(data);
     connection->Send(data);
 }

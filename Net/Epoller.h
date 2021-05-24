@@ -48,6 +48,7 @@ namespace Base {
 
                     void WaitLoop();
 
+                    std::vector<struct epoll_event> events;
                     std::map<int, std::shared_ptr<Connection>> connections_;
                     std::map<int, std::shared_ptr<int>> ties_;
                     std::shared_ptr<IndependentThreadVoid> independentThreadVoid_;

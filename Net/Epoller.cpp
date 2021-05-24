@@ -13,6 +13,7 @@ using namespace Base::Net::Tcp::Sockets;
 
 Epoll::Epoll() : size_(0), loop(false) {
     fd_ = epoll_create(256);
+    events.resize(16);
 }
 
 Epoll::~Epoll() {
@@ -31,11 +32,13 @@ int Epoll::AddEvent(int fd) {
 
 void Epoll::AddConnection(int fd, const Sockets::InetAddress &localAddr,
                           const Sockets::InetAddress &peerAddr) {
+    if (events.size() == size_)
+        events.resize(size_*2);
 
     std::shared_ptr<int> tie(new int(1));
 
     ties_[fd] = tie;
-    connections_[fd].reset(new Connection(fd, fd, localAddr, peerAddr, independentThreadVoid_));
+    connections_[fd].reset(new Connection(fd, localAddr, peerAddr, independentThreadVoid_));
 
     connections_[fd]->SetOnMessage(std::bind(&Epoll::OnMessage, this, std::placeholders::_1, std::placeholders::_2));
     connections_[fd]->SetDisConnect(
@@ -78,8 +81,6 @@ int Epoll::Wait(int size, std::vector<struct epoll_event> &events, const int &ti
 }
 
 void Epoll::WaitLoop() {
-    std::vector<struct epoll_event> events;
-    events.resize(size_);
     int num = Wait(size_, events, 0);
     for (int i = 0; i < num; ++i) {
         auto cn = connections_[events[i].data.fd];

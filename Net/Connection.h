@@ -21,7 +21,7 @@ namespace Base {
 
             class Connection : public std::enable_shared_from_this<Connection> {
             public:
-                explicit Connection(int sockfd, const int &index, const Sockets::InetAddress &localAddr,
+                explicit Connection(int sockfd, const Sockets::InetAddress &localAddr,
                                     const Sockets::InetAddress &peerAddr,
                                     const std::weak_ptr<IndependentThreadVoid> &independentThreadVoid);
 
@@ -53,7 +53,6 @@ namespace Base {
 
                 int SendInLoop();
 
-                const int index_;
                 std::unique_ptr<Sockets::Socket> socket_;
                 std::weak_ptr<int> tie_;
                 const Sockets::InetAddress peerAddr_;
