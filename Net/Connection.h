@@ -48,6 +48,8 @@ namespace Base::Net::Tcp {
 
         void Loop() override;
 
+        void ShutDownInLoop();
+
     private:
 
         int SendInLoop();

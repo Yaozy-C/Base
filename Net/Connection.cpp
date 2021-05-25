@@ -38,9 +38,35 @@ Connection::~Connection() = default;
 
 int Connection::Send(const std::string &message) {
 
-    output_->append(message.data(), message.size());
-    int res = epollMod_(socket_->GetFd(), EPOLLOUT | EPOLLET);
-    if (res < 0)
+    if (!output_->empty()) {
+        output_->readFd(message.data(), message.length());
+        int res = epollMod_(socket_->GetFd(),EPOLLOUT | EPOLLET);
+        if (res < 0)
+            ShutDown();
+        return 0;
+    }
+
+    size_t left = message.size();
+    size_t wd = 0;
+    size_t size = SocketOpt::Write(socket_->GetFd(), message.data() + wd, left);
+    left -= size;
+    wd += size;
+
+    if (left == 0) {
+        int res = epollMod_(socket_->GetFd(), EPOLLIN | EPOLLET);
+        if (res < 0)
+            ShutDown();
+        return 0;
+    }
+    if (size < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+        output_->readFd(message.data() + wd, left);
+        int res = epollMod_(socket_->GetFd(), EPOLLOUT | EPOLLET);
+        if (res < 0)
+            ShutDown();
+        return 0;
+    }
+
+    if (size <= 0)
         ShutDown();
     return 0;
 }
@@ -174,6 +200,10 @@ void Connection::Loop() {
         if (res < 0)
             ShutDown();
     }
+}
+
+void Connection::ShutDownInLoop() {
+    independentThreadVoid_.lock()->AddTask(std::bind(&Connection::ShutDown, this));
 }
 
 void Connection::ShutDown() {
