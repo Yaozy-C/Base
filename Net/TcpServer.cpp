@@ -31,18 +31,6 @@ void TcpServer::Start() {
     acceptor_->SetNewConnectCallBack(func);
 
     connectManager_->SetListener(fd_,acceptor_);
-//    ep_.AddEvent(fd_);
-//    independentThreadVoid->AddTask(std::bind(&TcpServer::Loop, this));
-}
-
-void TcpServer::Loop() {
-//    std::vector<struct epoll_event> events;
-//    events.resize(1);
-//    int num = ep_.Wait(1, events, 0);
-//    if (num > 0) {
-//        acceptor_->HandleRead();
-//    }
-//    independentThreadVoid->AddTask(std::bind(&TcpServer::Loop, this));
 }
 
 void TcpServer::OnMessage(const std::shared_ptr<Connection> &connection, const std::shared_ptr<Buffer> &buffer) {

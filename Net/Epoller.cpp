@@ -56,8 +56,6 @@ void Epoll::AddConnection(int fd, const Sockets::InetAddress &localAddr,
 
     ties_[fd] = tie;
     std::shared_ptr<Connection> cn(new Connection(fd, localAddr, peerAddr, independentThreadVoid_));
-//    connections_[fd].reset(new Connection(fd, localAddr, peerAddr, independentThreadVoid_));
-
     cn->SetOnMessage(std::bind(&Epoll::OnMessage, this, std::placeholders::_1, std::placeholders::_2));
     cn->SetDisConnect(
             std::bind(&Epoll::DELEvent, this, std::placeholders::_1));
@@ -85,7 +83,7 @@ void Epoll::RemoveConnection(const int &fd) {
 }
 
 void Epoll::OnMessage(const int &index, const std::shared_ptr<Buffer> &buffer) {
-    std::shared_ptr<Connection> cn(std::dynamic_pointer_cast< Connection>(connections_[index]));
+    std::shared_ptr<Connection> cn(std::dynamic_pointer_cast<Connection>(connections_[index]));
 //    LOG_DEBUG("cn:"+std::to_string(cn.use_count())+"   "+std::to_string(connections_[index].use_count()));
     onMessage_(cn, buffer);
 }

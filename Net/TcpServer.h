@@ -21,14 +21,11 @@ namespace Base::Net::Tcp {
 
         void Start();
 
-        void Loop();
-
         void OnMessage(const std::shared_ptr<Connection> &connection, const std::shared_ptr<Buffer> &buffer);
 
     private:
 
         int fd_;
-//        Sockets::Epoll ep_;
         const Sockets::InetAddress localAddr_;
         std::shared_ptr<Base::IndependentThreadPool> independentThreadPool;
 

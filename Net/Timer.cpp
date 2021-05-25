@@ -19,7 +19,7 @@ Timer::~Timer() {
 }
 
 void Timer::Init() {
-    fd_ = ::timerfd_create(CLOCK_MONOTONIC, 0);
+    fd_ = ::timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
     if (fd_ < 0) {
         abort();
     }
