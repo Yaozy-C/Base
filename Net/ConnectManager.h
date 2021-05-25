@@ -13,28 +13,26 @@
 #include "Epoller.h"
 #include "../Thread/IndependentThreadPool.h"
 
-namespace Base {
-    namespace Net {
-        namespace Tcp {
+namespace Base::Net::Tcp {
 
-            class ConnectManager {
-            public:
-                explicit ConnectManager(const std::shared_ptr<IndependentThreadPool> &pool);
+    class ConnectManager {
+    public:
+        explicit ConnectManager(const std::shared_ptr<IndependentThreadPool> &pool);
 
-                void NewConnection(int fd, const Sockets::InetAddress &localAddr, const Sockets::InetAddress &peerAddr);
+        void NewConnection(int fd, const Sockets::InetAddress &localAddr, const Sockets::InetAddress &peerAddr);
 
-                void SetServerOnMessage(const OnMessage &func);
+        void SetServerOnMessage(const OnMessage &func);
 
-            private:
+        void SetListener(const int &fd,const std::shared_ptr<Event> &lis);
 
-                std::shared_ptr<IndependentThreadPool> loops_;
+    private:
 
-                std::atomic<int> id_;
-                std::vector<std::shared_ptr<Sockets::Epoll>> epolls;
-                OnMessage onMessage_;
-            };
-        }
-    }
+        std::shared_ptr<IndependentThreadPool> loops_;
+
+        std::atomic<int> id_;
+        std::vector<std::shared_ptr<Sockets::Epoll>> epolls;
+        OnMessage onMessage_;
+    };
 }
 
 #endif //BASE_CONNECTMANAGER_H

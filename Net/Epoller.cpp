@@ -6,14 +6,16 @@
 #include <utility>
 #include <functional>
 #include "Epoller.h"
+#include "Timer.h"
 #include "Connection.h"
+#include "../Public/Log.h"
 
 using namespace Base::Net::Tcp::Sockets;
 
 
 Epoll::Epoll() : size_(0), loop(false) {
     fd_ = epoll_create(256);
-    events.resize(16);
+    events_.resize(16);
 }
 
 Epoll::~Epoll() {
@@ -30,22 +32,39 @@ int Epoll::AddEvent(int fd) {
     return res;
 }
 
+int Epoll::AddTimer() {
+    std::shared_ptr<Timer> timer_(new Timer);
+    timer_->Init();
+    timer_->SetTime();
+    connections_[timer_->GetFd()] = timer_;
+    AddEvent(timer_->GetFd());
+    return 0;
+}
+
+int Epoll::AddListener(const int &fd, const std::shared_ptr<Event> &lis) {
+    AddEvent(fd);
+    connections_[fd] = lis;
+    return 0;
+}
+
 void Epoll::AddConnection(int fd, const Sockets::InetAddress &localAddr,
                           const Sockets::InetAddress &peerAddr) {
-    if (events.size() == size_)
-        events.resize(size_*2);
+    if (events_.size() == size_)
+        events_.resize(size_ * 2);
 
     std::shared_ptr<int> tie(new int(1));
 
     ties_[fd] = tie;
-    connections_[fd].reset(new Connection(fd, localAddr, peerAddr, independentThreadVoid_));
+    std::shared_ptr<Connection> cn(new Connection(fd, localAddr, peerAddr, independentThreadVoid_));
+//    connections_[fd].reset(new Connection(fd, localAddr, peerAddr, independentThreadVoid_));
 
-    connections_[fd]->SetOnMessage(std::bind(&Epoll::OnMessage, this, std::placeholders::_1, std::placeholders::_2));
-    connections_[fd]->SetDisConnect(
+    cn->SetOnMessage(std::bind(&Epoll::OnMessage, this, std::placeholders::_1, std::placeholders::_2));
+    cn->SetDisConnect(
             std::bind(&Epoll::DELEvent, this, std::placeholders::_1));
-    connections_[fd]->SetUpdateFunc(
+    cn->SetUpdateFunc(
             std::bind(&Epoll::MODEvent, this, std::placeholders::_1, std::placeholders::_2));
-    connections_[fd]->SetTie(tie);
+    cn->SetTie(tie);
+    connections_[fd] = cn;
     AddEvent(fd);
 }
 
@@ -66,7 +85,9 @@ void Epoll::RemoveConnection(const int &fd) {
 }
 
 void Epoll::OnMessage(const int &index, const std::shared_ptr<Buffer> &buffer) {
-    onMessage_(connections_[index], buffer);
+    std::shared_ptr<Connection> cn(std::dynamic_pointer_cast< Connection>(connections_[index]));
+//    LOG_DEBUG("cn:"+std::to_string(cn.use_count())+"   "+std::to_string(connections_[index].use_count()));
+    onMessage_(cn, buffer);
 }
 
 int Epoll::MODEvent(int fd, int opt) const {
@@ -81,10 +102,10 @@ int Epoll::Wait(int size, std::vector<struct epoll_event> &events, const int &ti
 }
 
 void Epoll::WaitLoop() {
-    int num = Wait(size_, events, 0);
+    int num = Wait(size_, events_, 100);
     for (int i = 0; i < num; ++i) {
-        auto cn = connections_[events[i].data.fd];
-        cn->SetEvent(events[i].events);
+        auto cn = connections_[events_[i].data.fd];
+        cn->SetEvent(events_[i].events);
         cn->Loop();
     }
     independentThreadVoid_->AddTask(std::bind(&Epoll::WaitLoop, this));

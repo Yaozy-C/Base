@@ -23,7 +23,6 @@ Acceptor::~Acceptor() {
 }
 
 void Acceptor::Listen() {
-//    listening = true;
     acceptSocket.Listen();
 }
 
@@ -31,7 +30,10 @@ void Acceptor::SetNewConnectCallBack(const std::function<void(int, const Sockets
     func_ = func;
 }
 
-void Acceptor::HandleRead() {
+void Acceptor::SetEvent(const uint32_t &) {
+}
+
+void Acceptor::Loop() {
     Sockets::InetAddress peerAddr;
     int connfd = acceptSocket.Accept(&peerAddr);
     if (connfd >= 0) {

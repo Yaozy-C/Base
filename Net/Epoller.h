@@ -10,55 +10,59 @@
 #include <memory>
 #include "../Thread/IndependentThread.h"
 #include "CallBack.h"
+#include "Event.h"
 
 
-namespace Base {
-    namespace Net {
-        namespace Tcp {
-            class Connection;
-            namespace Sockets {
-                class InetAddress;
-                class Epoll {
-                public:
-                    Epoll();
+namespace Base::Net::Tcp {
+    class Event;
+    class Timer;
+    namespace Sockets {
+        class InetAddress;
 
-                    ~Epoll();
+        class Epoll {
+        public:
+            Epoll();
 
-                    void AddConnection(int fd,const Sockets::InetAddress &localAddr,
-                                 const Sockets::InetAddress &peerAddr);
+            ~Epoll();
 
-                    int AddEvent(int fd);
+            void AddConnection(int fd, const Sockets::InetAddress &localAddr,
+                               const Sockets::InetAddress &peerAddr);
 
-                    void SetServerOnMessage(const OnMessage &func);
+            int AddEvent(int fd);
 
-                    int DELEvent(const int &fd);
+            int AddTimer();
 
-                    int MODEvent(int fd, int opt) const;
+            int AddListener(const int &fd,const std::shared_ptr<Event> &lis);
 
-                    int Wait(int size, std::vector<struct epoll_event> &events ,const int &time) const;
+            void SetServerOnMessage(const OnMessage &func);
 
-                    void SetIndependentThreadVoid(const  std::shared_ptr<IndependentThreadVoid> &independentThreadVoid);
+            int DELEvent(const int &fd);
 
-                    bool Looping() {return loop;}
-                private:
+            [[nodiscard]] int MODEvent(int fd, int opt) const;
 
-                    void RemoveConnection(const int &fd);
+            int Wait(int size, std::vector<struct epoll_event> &events, const int &time) const;
 
-                    void OnMessage(const int &, const std::shared_ptr<Buffer> &);
+            void SetIndependentThreadVoid(const std::shared_ptr<IndependentThreadVoid> &independentThreadVoid);
 
-                    void WaitLoop();
+            bool Looping() { return loop; }
 
-                    std::vector<struct epoll_event> events;
-                    std::map<int, std::shared_ptr<Connection>> connections_;
-                    std::map<int, std::shared_ptr<int>> ties_;
-                    std::shared_ptr<IndependentThreadVoid> independentThreadVoid_;
-                    std::atomic<bool> loop;
-                    int size_;
-                    int fd_;
-                    ::Base::Net::Tcp::OnMessage onMessage_;
-                };
-            }
-        }
+        private:
+
+            void RemoveConnection(const int &fd);
+
+            void OnMessage(const int &, const std::shared_ptr<Buffer> &);
+
+            void WaitLoop();
+
+            std::vector<struct epoll_event> events_;
+            std::map<int, std::shared_ptr<Event>> connections_;
+            std::map<int, std::shared_ptr<int>> ties_;
+            std::shared_ptr<IndependentThreadVoid> independentThreadVoid_;
+            std::atomic<bool> loop;
+            int size_;
+            int fd_;
+            ::Base::Net::Tcp::OnMessage onMessage_;
+        };
     }
 }
 #endif //BASE_EPOLLER_H

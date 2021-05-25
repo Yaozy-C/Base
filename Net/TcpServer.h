@@ -11,35 +11,31 @@
 #include "Epoller.h"
 #include "../Thread/IndependentThreadPool.h"
 
-namespace Base {
-    namespace Net {
-        namespace Tcp {
+namespace Base::Net::Tcp {
 
-            class TcpServer {
-            public:
-                explicit TcpServer(const Sockets::InetAddress &localAddr);
+    class TcpServer {
+    public:
+        explicit TcpServer(const Sockets::InetAddress &localAddr);
 
-                ~TcpServer();
+        ~TcpServer();
 
-                void Start();
+        void Start();
 
-                void Loop();
+        void Loop();
 
-                void OnMessage(const std::shared_ptr<Connection> &connection, const std::shared_ptr<Buffer> &buffer);
+        void OnMessage(const std::shared_ptr<Connection> &connection, const std::shared_ptr<Buffer> &buffer);
 
-            private:
+    private:
 
-                int fd_;
-                Sockets::Epoll ep_;
-                const Sockets::InetAddress localAddr_;
-                std::shared_ptr<Base::IndependentThreadPool> independentThreadPool;
+        int fd_;
+//        Sockets::Epoll ep_;
+        const Sockets::InetAddress localAddr_;
+        std::shared_ptr<Base::IndependentThreadPool> independentThreadPool;
 
-                std::shared_ptr<Base::IndependentThreadVoid> independentThreadVoid;
-                std::shared_ptr<Acceptor> acceptor_;
-                std::shared_ptr<ConnectManager> connectManager_;
-            };
-        }
-    }
+        std::shared_ptr<Base::IndependentThreadVoid> independentThreadVoid;
+        std::shared_ptr<Acceptor> acceptor_;
+        std::shared_ptr<ConnectManager> connectManager_;
+    };
 }
 
 

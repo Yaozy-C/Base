@@ -7,45 +7,39 @@
 
 #include "InetAddress.h"
 
-namespace Base {
-    namespace Net {
-        namespace Tcp {
-            namespace Sockets {
+namespace Base::Net::Tcp::Sockets {
 
-                class Socket {
-                public:
-                    explicit Socket(int sockfd) : sockfd_(sockfd) {}
+    class Socket {
+    public:
+        explicit Socket(int sockfd) : sockfd_(sockfd) {}
 
-                    ~Socket();
+        ~Socket();
 
-                    [[nodiscard]] int GetFd() const { return sockfd_; }
+        [[nodiscard]] int GetFd() const { return sockfd_; }
 
-                    bool GetTcpInfo(struct tcp_info *) const;
+        bool GetTcpInfo(struct tcp_info *) const;
 
-                    bool GetTcpInfo(char *buf, int len) const;
+        bool GetTcpInfo(char *buf, int len) const;
 
-                    void BindAddress(const InetAddress &address) const;
+        void BindAddress(const InetAddress &address) const;
 
-                    void Listen() const;
+        void Listen() const;
 
-                    int Accept(InetAddress *peeraddr) const;
+        int Accept(InetAddress *peeraddr) const;
 
-                    void ShutDownWrite() const;
+        void ShutDownWrite() const;
 
-                    void SetReusePort(bool on) const;
+        void SetReusePort(bool on) const;
 
-                    void SetTcpNoDelay(bool on) const;
+        void SetTcpNoDelay(bool on) const;
 
-                    void SetReuseAddr(bool on) const;
+        void SetReuseAddr(bool on) const;
 
-                    void SetKeepAlive(bool on) const;
+        void SetKeepAlive(bool on) const;
 
-                private:
-                    const int sockfd_;
-                };
-            }
-        }
-    }
+    private:
+        const int sockfd_;
+    };
 }
 
 #endif //BASE_SOCKET_H

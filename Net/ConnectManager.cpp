@@ -24,9 +24,10 @@ ConnectManager::NewConnection(int fd, const Sockets::InetAddress &localAddr, con
     if (!ep->Looping()) {
         ep->SetIndependentThreadVoid(loop);
         ep->SetServerOnMessage(onMessage_);
+        ep->AddTimer();
     }
 
-    loop->AddTask(std::bind(&Sockets::Epoll::AddConnection,ep.get(),fd,localAddr,peerAddr));
+    loop->AddTask(std::bind(&Sockets::Epoll::AddConnection, ep.get(), fd, localAddr, peerAddr));
 
     id_++;
 }
@@ -34,4 +35,14 @@ ConnectManager::NewConnection(int fd, const Sockets::InetAddress &localAddr, con
 
 void ConnectManager::SetServerOnMessage(const OnMessage &func) {
     onMessage_ = func;
+}
+
+void ConnectManager::SetListener(const int &fd, const std::shared_ptr<Event> &lis) {
+    auto loop = loops_->GetIndependentThreadVoid(id_);
+    if (!epolls[0]->Looping()) {
+        epolls[0]->SetIndependentThreadVoid(loop);
+        epolls[0]->SetServerOnMessage(onMessage_);
+        epolls[0]->AddTimer();
+        epolls[0]->AddListener(fd, lis);
+    }
 }

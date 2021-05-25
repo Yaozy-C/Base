@@ -9,18 +9,14 @@
 #include <memory>
 #include "../Public/Buffer.h"
 
-namespace Base {
-    namespace Net {
-        namespace Tcp {
-            class Connection;
+namespace Base::Net::Tcp {
+    class Connection;
 
-            typedef std::function<void(const std::shared_ptr<Connection> &, const std::shared_ptr<Buffer> &)> OnMessage;
-            typedef std::function<void(const int &, const std::shared_ptr<Buffer> &)> ConnOnMessage;
-            typedef std::function<void( const int&)> DisConnect;
-            typedef std::function<int(int, int)> EpollMod;
+    typedef std::function<void(const std::shared_ptr<Connection> &, const std::shared_ptr<Buffer> &)> OnMessage;
+    typedef std::function<void(const int &, const std::shared_ptr<Buffer> &)> ConnOnMessage;
+    typedef std::function<void(const int &)> DisConnect;
+    typedef std::function<int(int, int)> EpollMod;
 
-        }
-    }
 }
 
 #endif //BASE_CALLBACK_H
