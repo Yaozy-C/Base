@@ -62,6 +62,7 @@ void Epoll::AddConnection(int fd, const Sockets::InetAddress &localAddr,
     cn->SetUpdateFunc(
             std::bind(&Epoll::MODEvent, this, std::placeholders::_1, std::placeholders::_2));
     cn->SetTie(tie);
+    cn->SetNoDelay(true);
     connections_[fd] = cn;
     AddEvent(fd);
 }

@@ -16,6 +16,7 @@ Acceptor::Acceptor(int sockfd, const Sockets::InetAddress &listenAddr) :
     acceptSocket.SetReuseAddr(true);
     acceptSocket.SetReusePort(true);
     acceptSocket.BindAddress(listenAddr);
+    acceptSocket.SetTcpNoDelay(true);
 }
 
 Acceptor::~Acceptor() {

@@ -108,6 +108,10 @@ void Connection::SetUpdateFunc(const EpollMod &func) {
     epollMod_ = func;
 }
 
+void Connection::SetNoDelay(bool on) {
+    socket_->SetTcpNoDelay(on);
+}
+
 std::string Connection::GetTcpInfo() {
     char buf[1024] = {0};
     socket_->GetTcpInfo(buf, sizeof buf);

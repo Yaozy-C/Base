@@ -192,7 +192,7 @@ namespace Base {
         }
 
 
-        int8_t peekInt8() const {
+        [[nodiscard]] int8_t peekInt8() const {
             assert(readableBytes() >= sizeof(int8_t));
             int8_t x = *peek();
             return x;
@@ -210,7 +210,7 @@ namespace Base {
         }
 
 
-        size_t internalCapacity() const {
+        [[nodiscard]] size_t internalCapacity() const {
             return buffer_.capacity();
         }
 
@@ -221,7 +221,7 @@ namespace Base {
 
         char *begin() { return &*buffer_.begin(); }
 
-        const char *begin() const { return &*buffer_.begin(); }
+        [[nodiscard]] const char *begin() const { return &*buffer_.begin(); }
 
         void makeSpace(size_t len) {
             if (writableBytes() + prependableBytes() < len + kCheapPrepend) {

@@ -40,6 +40,8 @@ namespace Base::Net::Tcp {
 
         void SetUpdateFunc(const EpollMod &func);
 
+        void SetNoDelay(bool on);
+
         std::string GetTcpInfo();
 
         std::string GetConnectionInfo();

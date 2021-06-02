@@ -34,7 +34,7 @@ void Timer::SetTime() const {
 
     new_value.it_value.tv_sec = 2;
     new_value.it_value.tv_nsec = 0;
-    new_value.it_interval.tv_sec = 1;
+    new_value.it_interval.tv_sec = 10;
     new_value.it_interval.tv_nsec = 0;
     int ret = timerfd_settime(fd_, 0, &new_value, nullptr);
     if (ret < 0) {
