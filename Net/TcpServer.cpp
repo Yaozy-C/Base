@@ -20,6 +20,7 @@ TcpServer::~TcpServer() {
 }
 
 void TcpServer::Start() {
+    work_.reset(new IndependentThreadVoid);
 
     connectManager_.reset(new ConnectManager(independentThreadPool));
     connectManager_->SetServerOnMessage(
@@ -30,11 +31,18 @@ void TcpServer::Start() {
                                            localAddr_, std::placeholders::_2);
     acceptor_->SetNewConnectCallBack(func);
 
-    connectManager_->SetListener(fd_,acceptor_);
+    connectManager_->SetListener(fd_, acceptor_);
 }
 
 void TcpServer::OnMessage(const std::shared_ptr<Connection> &connection, const std::shared_ptr<Buffer> &buffer) {
 
+    work_->AddTask(std::bind(&TcpServer::OnMessageInWorker, this,connection,buffer));
+//    std::string data = buffer->retrieveAllAsString();
+//    connection->Send(data);
+}
+
+void TcpServer::OnMessageInWorker(const std::shared_ptr<Connection> &connection,
+                                  const std::shared_ptr<Buffer> &buffer) {
     std::string data = buffer->retrieveAllAsString();
     connection->Send(data);
 }

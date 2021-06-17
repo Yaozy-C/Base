@@ -23,6 +23,8 @@ namespace Base::Net::Tcp {
 
         void OnMessage(const std::shared_ptr<Connection> &connection, const std::shared_ptr<Buffer> &buffer);
 
+        void OnMessageInWorker(const std::shared_ptr<Connection> &connection, const std::shared_ptr<Buffer> &buffer);
+
     private:
 
         int fd_;
@@ -30,6 +32,7 @@ namespace Base::Net::Tcp {
         std::shared_ptr<Base::IndependentThreadPool> independentThreadPool;
 
         std::shared_ptr<Base::IndependentThreadVoid> independentThreadVoid;
+        std::shared_ptr<Base::IndependentThreadVoid> work_;
         std::shared_ptr<Acceptor> acceptor_;
         std::shared_ptr<ConnectManager> connectManager_;
     };

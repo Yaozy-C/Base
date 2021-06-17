@@ -30,12 +30,17 @@ namespace Base {
             return independentVoids[index % size_];
         }
 
+//        std::shared_ptr<IndependentThreadVoid> GetWork() {
+//            return work_;
+//        }
+
         int GetSize() {
             return size_;
         }
 
     private:
         std::map<int, std::shared_ptr<IndependentThreadVoid>> independentVoids;
+//        std::shared_ptr<IndependentThreadVoid> work_;
         int size_;
     };
 }
