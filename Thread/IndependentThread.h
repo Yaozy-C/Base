@@ -12,6 +12,7 @@
 #include <functional>
 #include <set>
 #include <map>
+#include <iostream>
 #include "SafeQue.h"
 
 namespace Base {
@@ -113,7 +114,6 @@ namespace Base {
                 for (int i = 0; i < tasks.size(); ++i) {
                     tasks[i]();
                 }
-//                std::this_thread::sleep_for(std::chrono::nanoseconds (1));
             }
         };
 
@@ -159,12 +159,12 @@ namespace Base {
 
         std::atomic<bool> _shutdown;
         std::set<std::pair<std::chrono::steady_clock::time_point, int>, Comp> timer;
-        std::chrono::microseconds time;
+//        std::chrono::microseconds time;
         std::atomic<int> index;
         std::map<int, std::function<void()>> _tasks;
     public:
 
-        IndependentThreadTimeLoop(int microseconds) : _shutdown(false), time(microseconds), index(0) {
+        IndependentThreadTimeLoop() : _shutdown(false), index(0) {
             _thread = std::thread(&IndependentThreadTimeLoop::Execute, this);
         };
 
@@ -182,20 +182,34 @@ namespace Base {
                     _cv.wait(_lock);
                 }
 
-                auto now = std::chrono::steady_clock::now();
+//                auto now = std::chrono::steady_clock::now();
 
-                for (auto iter = timer.begin(); iter != timer.end();) {
-                    if ((now - iter->first).count() > 0) {
-                        _tasks[iter->second]();
-                        _tasks.erase(iter->second);
-                        iter = timer.erase(iter);
-                    } else
-                        break;
+//                for (auto iter = timer.begin(); iter != timer.end();) {
+//                    if ((now - iter->first).count() > 0) {
+//                        _tasks[iter->second]();
+//                        _tasks.erase(iter->second);
+//                        iter = timer.erase(iter);
+//                    } else
+//                        break;
+//                }
+
+
+                auto iter = timer.lower_bound(std::pair<std::chrono::steady_clock::time_point, int>(
+                        std::chrono::steady_clock::now(), 0));
+
+                for (auto it = timer.begin(); it != iter;) {
+                    std::cout << "run:" << it->second << "    " << std::endl;
+                    _tasks[it->second]();
+                    _tasks.erase(it->second);
+                    it = timer.erase(it);
                 }
             }
         };
 
         void Shutdown() {
+            while (!_tasks.empty()) {
+                std::this_thread::sleep_for(std::chrono::seconds(10));
+            }
             _shutdown = true;
             _cv.notify_all();
             if (_thread.joinable())
@@ -204,7 +218,7 @@ namespace Base {
 
 
         template<class F, class...Args>
-        void AddTaskAt(F &&f, Args &&... args) {
+        void AddTaskAt(F &&f, std::chrono::steady_clock::time_point time, Args &&... args) {
             auto ptr = std::make_shared<std::packaged_task<decltype(f(args...))()>>(
                     std::bind(std::forward<F>(f), std::forward<Args>(args)...));
             std::function<void()> func = [ptr]() {
@@ -212,7 +226,7 @@ namespace Base {
             };
 
             auto data = std::pair<std::chrono::steady_clock::time_point, int>(
-                    std::chrono::steady_clock::now() + time, index);
+                    time, index);
 
             auto pair = timer.insert(data);
             if (!pair.second) {

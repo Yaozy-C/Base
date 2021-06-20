@@ -64,12 +64,40 @@ void RfidDev::EncodeJson(cJSON *writer) {
     Base::AddJsonValue(writer, "Port", port);
 }
 
+int test(int index, std::chrono::steady_clock::time_point tp) {
+
+
+    LOG_DEBUG("index:" + std::to_string(index));
+    LOG_DEBUG("set:" + std::to_string(tp.time_since_epoch().count()));
+    LOG_DEBUG("run:" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
+    return 0;
+}
+
 int main() {
     LOG_INIT_LOGGER();
 
-    Base::Net::Tcp::Sockets::InetAddress inetAddress(4567);
-    Base::Net::Tcp::TcpServer tcpServer(inetAddress);
-    tcpServer.Start();
-    std::this_thread::sleep_for(std::chrono::seconds(2000000));
+//    Base::Net::Tcp::Sockets::InetAddress inetAddress(4567);
+//    Base::Net::Tcp::TcpServer tcpServer(inetAddress);
+//    tcpServer.Start();
+//    std::this_thread::sleep_for(std::chrono::seconds(2000000));
+
+
+    try {
+
+
+        Base::IndependentThreadTimeLoop timer;
+
+        auto date = std::chrono::steady_clock::now() + std::chrono::seconds(20);
+        for (int i = 0; i < 100; ++i) {
+            date += std::chrono::microseconds(1);
+            timer.AddTaskAt(std::bind(test, i, date), date);
+
+            if (i == 50)
+                date -= std::chrono::seconds(20);
+        }
+    } catch (const char *msg) {
+        LOG_ERROR(msg);
+    }
+
     return 0;
 }
