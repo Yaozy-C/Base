@@ -4,7 +4,6 @@
 
 #include "Timer.h"
 #include "../Public/Log.h"
-#include "../Thread/Pool.h"
 #include "SocketOpt.h"
 #include <sys/timerfd.h>
 

@@ -12,8 +12,6 @@
 #include <functional>
 #include <set>
 #include <map>
-#include <iostream>
-#include "SafeQue.h"
 
 namespace Base {
     template<typename T>
@@ -159,7 +157,6 @@ namespace Base {
 
         std::atomic<bool> _shutdown;
         std::set<std::pair<std::chrono::steady_clock::time_point, int>, Comp> timer;
-//        std::chrono::microseconds time;
         std::atomic<int> index;
         std::map<int, std::function<void()>> _tasks;
     public:
@@ -182,23 +179,10 @@ namespace Base {
                     _cv.wait(_lock);
                 }
 
-//                auto now = std::chrono::steady_clock::now();
-
-//                for (auto iter = timer.begin(); iter != timer.end();) {
-//                    if ((now - iter->first).count() > 0) {
-//                        _tasks[iter->second]();
-//                        _tasks.erase(iter->second);
-//                        iter = timer.erase(iter);
-//                    } else
-//                        break;
-//                }
-
-
                 auto iter = timer.lower_bound(std::pair<std::chrono::steady_clock::time_point, int>(
                         std::chrono::steady_clock::now(), 0));
 
                 for (auto it = timer.begin(); it != iter;) {
-                    std::cout << "run:" << it->second << "    " << std::endl;
                     _tasks[it->second]();
                     _tasks.erase(it->second);
                     it = timer.erase(it);
