@@ -34,7 +34,7 @@ namespace Base {
 //            return work_;
 //        }
 
-        int GetSize() {
+        [[nodiscard]] int GetSize() const {
             return size_;
         }
 

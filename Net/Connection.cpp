@@ -40,7 +40,7 @@ int Connection::Send(const std::string &message) {
 
     if (!output_->empty()) {
         output_->readFd(message.data(), message.length());
-        int res = epollMod_(socket_->GetFd(),EPOLLOUT | EPOLLET);
+        int res = epollMod_(socket_->GetFd(), EPOLLOUT | EPOLLET);
         if (res < 0)
             ShutDown();
         return 0;
@@ -58,6 +58,7 @@ int Connection::Send(const std::string &message) {
             ShutDown();
         return 0;
     }
+
     if (size < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
         output_->readFd(message.data() + wd, left);
         int res = epollMod_(socket_->GetFd(), EPOLLOUT | EPOLLET);
@@ -75,9 +76,11 @@ int Connection::Read() {
     char buf[65535];
     std::string data;
     ssize_t size = 0;
+
     while ((size = SocketOpt::Read(socket_->GetFd(), buf, 65535)) > 0) {
         data.append(buf, size);
     }
+
     if (size < 0 && errno == EAGAIN) {
         input_->readFd(data.data(), data.length());
         if (onMessage_) {
@@ -85,6 +88,7 @@ int Connection::Read() {
         }
         return 0;
     }
+
     if (size == 0) {
         return -1;
     }
@@ -150,6 +154,7 @@ int Connection::SendInLoop() {
     size_t left = message.size();
     size_t wd = 0;
     size_t size = 0;
+
     while ((size = SocketOpt::Write(socket_->GetFd(), message.data() + wd, left)) > 0) {
         left -= size;
         wd += size;
@@ -158,6 +163,7 @@ int Connection::SendInLoop() {
     if (left == 0) {
         return 0;
     }
+
     if (size < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
         output_->readFd(message.data() + wd, left);
         return 1;
@@ -174,6 +180,7 @@ void Connection::Loop() {
     if (!tie) {
         return;
     }
+
     if ((events_ & EPOLLHUP) && !(events_ & EPOLLIN)) {
         ShutDown();
         return;
@@ -183,12 +190,14 @@ void Connection::Loop() {
         ShutDown();
         return;
     }
+
     if (events_ & (EPOLLIN | EPOLLPRI | EPOLLRDHUP)) {
         int res = Read();
         if (res < 0)
             ShutDown();
         return;
     }
+
     if (events_ & EPOLLOUT) {
         int res = SendInLoop();
         if (res < 0) {
