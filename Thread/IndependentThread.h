@@ -22,9 +22,10 @@ namespace Base {
         std::condition_variable _cv;
         std::vector<T> _tasks;
         std::atomic<bool> _shutdown;
+        std::atomic<bool> _run;
     public:
 
-        IndependentThread() : _shutdown(false) {
+        IndependentThread() : _shutdown(false), _run(false) {
             _thread = std::thread(&IndependentThread::Execute, this);
         };
 
@@ -48,19 +49,21 @@ namespace Base {
                     _tasks.swap(tasks);
                 }
 
+                _run = true;
                 for (int i = 0; i < tasks.size(); ++i) {
                     Run(tasks[i]);
                 }
+                _run = false;
                 std::this_thread::sleep_for(std::chrono::microseconds(10));
             }
         };
 
         void Shutdown() {
-            while (!_tasks.empty()) {
+            while (!_tasks.empty() || _run) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
             _shutdown = true;
-            _cv.notify_all();
+            _cv.notify_one();
             if (_thread.joinable())
                 _thread.join();
         };
@@ -70,7 +73,7 @@ namespace Base {
                 std::unique_lock<std::mutex> _lock(mtx);
                 _tasks.emplace_back(task);
             }
-            _cv.notify_all();
+            _cv.notify_one();
         };
 
     protected:
@@ -84,9 +87,10 @@ namespace Base {
         std::condition_variable _cv;
         std::atomic<bool> _shutdown;
         std::vector<std::function<void()>> _tasks;
+        std::atomic<bool> _run;
     public:
 
-        IndependentThreadVoid() : _shutdown(false) {
+        IndependentThreadVoid() : _shutdown(false), _run(false) {
             _thread = std::thread(&IndependentThreadVoid::Execute, this);
         };
 
@@ -109,18 +113,21 @@ namespace Base {
                     std::unique_lock<std::mutex> _lock(mtx);
                     _tasks.swap(tasks);
                 }
-                for (int i = 0; i < tasks.size(); ++i) {
-                    tasks[i]();
+
+                _run = true;
+                for (auto &task: tasks) {
+                    task();
                 }
+                _run = false;
             }
         };
 
         void Shutdown() {
-            while (!_tasks.empty()) {
+            while (!_tasks.empty() || _run) {
                 std::this_thread::sleep_for(std::chrono::seconds(10));
             }
             _shutdown = true;
-            _cv.notify_all();
+            _cv.notify_one();
             if (_thread.joinable())
                 _thread.join();
         };
@@ -195,7 +202,7 @@ namespace Base {
                 std::this_thread::sleep_for(std::chrono::seconds(10));
             }
             _shutdown = true;
-            _cv.notify_all();
+            _cv.notify_one();
             if (_thread.joinable())
                 _thread.join();
         };
