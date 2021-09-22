@@ -159,16 +159,16 @@ namespace Base {
     class IndependentThreadTimeLoop {
     private:
         std::thread _thread;
-        std::mutex mtx_;
+        std::mutex _mtx;
         std::condition_variable _cv;
 
         std::atomic<bool> _shutdown;
         std::set<std::pair<std::chrono::steady_clock::time_point, int>, Comp> timer;
-        std::atomic<int> index;
+        std::atomic<int> _index;
         std::map<int, std::function<void()>> _tasks;
     public:
 
-        IndependentThreadTimeLoop() : _shutdown(false), index(0) {
+        IndependentThreadTimeLoop() : _shutdown(false), _index(0) {
             _thread = std::thread(&IndependentThreadTimeLoop::Execute, this);
         };
 
@@ -178,22 +178,33 @@ namespace Base {
 
         virtual void Execute() {
             while (!_shutdown) {
-                std::unique_lock<std::mutex> _lock(mtx_);
-                while (_tasks.empty()) {
-                    if (_shutdown) {
-                        return;
+                {
+                    std::unique_lock<std::mutex> _lock(_mtx);
+                    while (_tasks.empty()) {
+                        if (_shutdown) {
+                            return;
+                        }
+                        _cv.wait(_lock);
                     }
-                    _cv.wait(_lock);
                 }
 
-                auto iter = timer.lower_bound(std::pair<std::chrono::steady_clock::time_point, int>(
-                        std::chrono::steady_clock::now(), 0));
-
-                for (auto it = timer.begin(); it != iter;) {
-                    _tasks[it->second]();
-                    _tasks.erase(it->second);
-                    it = timer.erase(it);
+                std::vector<std::function<void()>> tasks;
+                {
+                    std::unique_lock<std::mutex> _lock(_mtx);
+                    auto iter = timer.lower_bound(std::pair<std::chrono::steady_clock::time_point, int>(
+                            std::chrono::steady_clock::now(), 0));
+                    for (auto it = timer.begin(); it != iter;) {
+                        _tasks[it->second]();
+                        tasks.emplace_back(_tasks[it->second]);
+                        _tasks.erase(it->second);
+                        it = timer.erase(it);
+                    }
                 }
+
+                for (auto &task: tasks) {
+                    task();
+                }
+
             }
         };
 
@@ -217,16 +228,16 @@ namespace Base {
             };
 
             auto data = std::pair<std::chrono::steady_clock::time_point, int>(
-                    time, index);
+                    time, _index);
 
             auto pair = timer.insert(data);
             if (!pair.second) {
                 throw "AddTaskAt error";
             }
-            _tasks[index] = func;
-            index++;
-            if (index == 10000000)
-                index = 0;
+            _tasks[_index] = func;
+            _index++;
+            if (_index == 10000000)
+                _index = 0;
             _cv.notify_one();
         }
     };
