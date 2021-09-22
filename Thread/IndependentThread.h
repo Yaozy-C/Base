@@ -194,7 +194,6 @@ namespace Base {
                     auto iter = timer.lower_bound(std::pair<std::chrono::steady_clock::time_point, int>(
                             std::chrono::steady_clock::now(), 0));
                     for (auto it = timer.begin(); it != iter;) {
-                        _tasks[it->second]();
                         tasks.emplace_back(_tasks[it->second]);
                         _tasks.erase(it->second);
                         it = timer.erase(it);
