@@ -228,12 +228,15 @@ namespace Base {
 
             auto data = std::pair<std::chrono::steady_clock::time_point, int>(
                     time, _index);
-
-            auto pair = timer.insert(data);
-            if (!pair.second) {
-                throw "AddTaskAt error";
+            {
+                std::unique_lock<std::mutex> _lock(_mtx);
+                auto pair = timer.insert(data);
+                if (!pair.second) {
+                    throw "AddTaskAt error";
+                }
+                _tasks[_index] = func;
             }
-            _tasks[_index] = func;
+
             _index++;
             if (_index == 10000000)
                 _index = 0;
