@@ -8,11 +8,13 @@
 #include <curl/curl.h>
 #include <fstream>
 #include <string>
+#include <atomic>
 
 namespace Base {
 
     using std::string;
 
+    std::atomic<int> init = 0;
     enum HTTPCode {
         NONE = 0,
         GET,

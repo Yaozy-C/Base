@@ -8,7 +8,10 @@
 using namespace std;
 namespace Base {
     LibCurl::LibCurl() {
-        curl_global_init(CURL_GLOBAL_ALL);
+        if (init == 0) {
+            curl_global_init(CURL_GLOBAL_ALL);
+        }
+        init++;
         curl = curl_easy_init();
         mime = nullptr;
         mime = curl_mime_init(curl);
@@ -21,7 +24,9 @@ namespace Base {
 
     LibCurl::~LibCurl() {
         curl_easy_cleanup(curl);
-        curl_global_cleanup();
+        if (init == 1)
+            curl_global_cleanup();
+        init--;
     };
 
     void LibCurl::Init() {
