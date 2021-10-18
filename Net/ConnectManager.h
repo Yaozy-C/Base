@@ -23,7 +23,7 @@ namespace Base::Net::Tcp {
 
         void SetServerOnMessage(const OnMessage &func);
 
-        void SetListener(const int &fd,const std::shared_ptr<Event> &lis);
+        void SetListener(const int &fd,const std::shared_ptr<Base::Thread::Event> &lis);
 
     private:
 

@@ -8,7 +8,6 @@
 #include "Epoller.h"
 #include "Timer.h"
 #include "Connection.h"
-#include "../Public/Log.h"
 
 using namespace Base::Net::Tcp::Sockets;
 
@@ -33,15 +32,14 @@ int Epoll::AddEvent(int fd) {
 }
 
 int Epoll::AddTimer() {
-    std::shared_ptr<Timer> timer_(new Timer);
-    timer_->Init();
-    timer_->SetTime();
+    std::shared_ptr<Base::Thread::TEvent> timer_(new Base::Thread::TEvent);
+    timer_->SetTime(10, 0, 10, 0);
     connections_[timer_->GetFd()] = timer_;
     AddEvent(timer_->GetFd());
     return 0;
 }
 
-int Epoll::AddListener(const int &fd, const std::shared_ptr<Event> &lis) {
+int Epoll::AddListener(const int &fd, const std::shared_ptr<Base::Thread::Event> &lis) {
     AddEvent(fd);
     connections_[fd] = lis;
     return 0;

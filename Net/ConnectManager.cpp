@@ -37,7 +37,7 @@ void ConnectManager::SetServerOnMessage(const OnMessage &func) {
     onMessage_ = func;
 }
 
-void ConnectManager::SetListener(const int &fd, const std::shared_ptr<Event> &lis) {
+void ConnectManager::SetListener(const int &fd, const std::shared_ptr<Base::Thread::Event> &lis) {
     auto loop = loops_->GetIndependentThreadVoid(id_);
     if (!epolls[0]->Looping()) {
         epolls[0]->SetIndependentThreadVoid(loop);

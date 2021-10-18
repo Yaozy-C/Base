@@ -18,7 +18,7 @@
 
 namespace Base::Net::Tcp {
 
-    class Connection : public Event {
+    class Connection : public Base::Thread::Event {
     public:
         explicit Connection(int sockfd, const Sockets::InetAddress &localAddr,
                             const Sockets::InetAddress &peerAddr,

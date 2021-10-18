@@ -13,7 +13,7 @@ namespace Base::Net::Tcp {
 
     typedef std::function<void(int, const Base::Net::Tcp::Sockets::InetAddress &)> NewConnectionCallback;
 
-    class Acceptor : public Event {
+    class Acceptor : public Base::Thread::Event {
     public:
         explicit Acceptor(int sockfd, const Sockets::InetAddress &listenAddr);
 

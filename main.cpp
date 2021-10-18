@@ -1,8 +1,5 @@
-#include <set>
-#include "Public/Buffer.h"
-#include "Public/Log.h"
+#include <IndependentThreadTimeLoop.h>
 #include "Public/DataPacket.h"
-#include "Net/TcpServer.h"
 
 using namespace std;
 
@@ -76,25 +73,17 @@ int test(int index, std::chrono::steady_clock::time_point tp) {
 int main() {
     LOG_INIT_LOGGER();
 
-//    Base::Net::Tcp::Sockets::InetAddress inetAddress(4567);
-//    Base::Net::Tcp::TcpServer tcpServer(inetAddress);
-//    tcpServer.Start();
-//    std::this_thread::sleep_for(std::chrono::seconds(2000000));
-
-
     try {
 
+        Base::Thread::IndependentThreadTimeLoop timer;
 
-        Base::IndependentThreadTimeLoop timer;
+        auto date = std::chrono::steady_clock::now() + std::chrono::seconds(2);
+        LOG_DEBUG("post");
+        int task = timer.AddTask(20, 0, 3, 0, std::bind(test, 1, date), date);
 
-        auto date = std::chrono::steady_clock::now() + std::chrono::seconds(20);
-        for (int i = 0; i < 100; ++i) {
-            date += std::chrono::microseconds(1);
-            timer.AddTaskAt(std::bind(test, i, date), date);
+        std::this_thread::sleep_for(std::chrono::seconds(30));
 
-            if (i == 50)
-                date -= std::chrono::seconds(20);
-        }
+        timer.CancelTask(task);
     } catch (const char *msg) {
         LOG_ERROR(msg);
     }

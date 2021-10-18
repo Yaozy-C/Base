@@ -7,7 +7,7 @@
 
 #include <cstdint>
 
-namespace Base::Net::Tcp {
+namespace Base::Thread {
     class Event {
     public:
         virtual void Loop() = 0;
