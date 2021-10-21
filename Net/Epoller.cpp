@@ -32,8 +32,8 @@ int Epoll::AddEvent(int fd) {
 }
 
 int Epoll::AddTimer() {
-    std::shared_ptr<Base::Thread::TEvent> timer_(new Base::Thread::TEvent);
-    timer_->SetTime(10, 0, 10, 0);
+    std::shared_ptr<Base::Thread::TEvent> timer_ = std::make_shared<Base::Thread::TEvent>();
+//    timer_->SetTime(10, 0, 10, 0);
     connections_[timer_->GetFd()] = timer_;
     AddEvent(timer_->GetFd());
     return 0;

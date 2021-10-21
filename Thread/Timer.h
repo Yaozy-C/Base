@@ -8,17 +8,43 @@
 #include "Event.h"
 #include "IndependentThread.h"
 #include <vector>
+#include <set>
 #include <sys/epoll.h>
 
 namespace Base::Thread {
+
+
+    class Comp {
+    public:
+        bool operator()(const std::pair<std::chrono::steady_clock::time_point, int> &x,
+                        const std::pair<std::chrono::steady_clock::time_point, int> &y) {
+
+            return x.first.time_since_epoch().count() < y.first.time_since_epoch().count();
+        }
+    };
+
+    class Task {
+    public:
+        Task(const int &id, const int &microseconds, const bool &repeat, std::function<void()> _task);
+
+        [[nodiscard]] int Valid(std::chrono::steady_clock::time_point tp) const;
+
+        void SetTimePoint(std::chrono::steady_clock::time_point tp);
+
+        int _microseconds;
+        std::atomic<bool> _repeat;
+        int _id;
+        std::function<void()> _func;
+        std::chrono::steady_clock::time_point _tp;
+    };
+
+    class Timer;
+
     class TEvent : public Event {
     public:
         TEvent();
 
         ~TEvent();
-
-        void
-        SetTime(const int &second, const int &nSecond, const int &intervalSecond, const int &intervalNSecond);
 
         [[nodiscard]] int GetFd() const;
 
@@ -26,16 +52,31 @@ namespace Base::Thread {
 
         void SetEvent(const uint32_t &event) override;
 
-        void SetCallBack(std::function<void()> func);
+        int AddTask(const int &second, const bool &repeat, const std::function<void()> &func);
 
-        void RegisterRemove(std::function<void(const int &)> disconnect);
+        void RegisterTimer(const std::shared_ptr<Timer> &timer);
+
+        void RegisterThread(const std::shared_ptr<IndependentThreadVoid> &thread);
+
+        void Remove(const int &index);
 
     private:
-        std::function<void()> _func;
         int _fd;
+        std::atomic<int> _id;
         int _event;
-        bool _interval;
-        std::function<void(const int &)> _disconnect;
+        std::map<int, std::shared_ptr<Task>> _tasks;
+        std::set<std::pair<std::chrono::steady_clock::time_point, int>, Comp> _taskList;
+        std::shared_ptr<IndependentThreadVoid> _thread;
+        std::shared_ptr<IndependentThreadVoid> _worker;
+        std::weak_ptr<Timer> _timer;
+
+        void ResetTask(const std::vector<std::shared_ptr<Task>> &tasks);
+
+        void SetTime(const int &second) const;
+
+        void Run(const std::vector<std::shared_ptr<Task>> &tasks);
+
+        void AddTaskInLoop(const std::shared_ptr<Task> &task);
     };
 
 
@@ -45,13 +86,9 @@ namespace Base::Thread {
 
         ~Timer();
 
-        int AddEvent(int fd, const std::shared_ptr<TEvent> &event);
+        void AddEvent(int fd, const std::shared_ptr<TEvent> &event);
 
         void WaitLoop();
-
-        int GetSize();
-
-        bool Empty();
 
         void RemoveEvent(const int &fd);
 
@@ -62,9 +99,14 @@ namespace Base::Thread {
         int Wait(int size, std::vector<struct epoll_event> &events, const int &time) const;
 
         int _fd;
-        std::atomic<int> size_;
-        std::vector<struct epoll_event> events_;
-        std::map<int, std::shared_ptr<TEvent>> connections_;
+        std::atomic<int> _size;
+        std::vector<struct epoll_event> _events;
+        std::map<int, std::shared_ptr<TEvent>> _connections;
+        std::shared_ptr<IndependentThreadVoid> _thread;
+
+        void RemoveEventInLoop(const int &fd);
+
+        int AddEventInLoop(int fd, const std::shared_ptr<TEvent> &event);
     };
 }
 

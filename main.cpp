@@ -1,5 +1,8 @@
-#include <IndependentThreadTimeLoop.h>
 #include "Public/DataPacket.h"
+#include <chrono>
+#include <sys/time.h>
+#include "Timer.h"
+#include "Log.h"
 
 using namespace std;
 
@@ -75,15 +78,21 @@ int main() {
 
     try {
 
-        Base::Thread::IndependentThreadTimeLoop timer;
+
+        std::shared_ptr<Base::Thread::Timer> timer = std::make_shared<Base::Thread::Timer>();
+
+        std::shared_ptr<Base::Thread::TEvent> event = std::make_shared<Base::Thread::TEvent>();
+        timer->AddEvent(event->GetFd(), event);
+
+        event->RegisterTimer(timer);
 
         auto date = std::chrono::steady_clock::now() + std::chrono::seconds(2);
         LOG_DEBUG("post");
-        int task = timer.AddTask(20, 0, 3, 0, std::bind(test, 1, date), date);
+        int id = event->AddTask(3000000, true, std::bind(test, 1, date));
 
-        std::this_thread::sleep_for(std::chrono::seconds(30));
+        std::this_thread::sleep_for(std::chrono::seconds(20));
 
-        timer.CancelTask(task);
+        event->Remove(id);
     } catch (const char *msg) {
         LOG_ERROR(msg);
     }

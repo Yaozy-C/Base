@@ -7,41 +7,58 @@
 #include "SocketOpt.h"
 #include <sys/timerfd.h>
 
-#include <utility>
-
 using namespace Base::Thread;
 
 
-TEvent::TEvent() : _fd(-1), _event(0), _interval(false) {
+Task::Task(const int &id, const int &microseconds, const bool &repeat, std::function<void()> func) : _microseconds(
+        microseconds),
+                                                                                                     _repeat(
+                                                                                                             repeat),
+                                                                                                     _id(id) {
+    _func = std::move(func);
+}
+
+int Task::Valid(std::chrono::steady_clock::time_point tp) const {
+
+    std::chrono::duration<int, std::ratio<1, 1000000>> time_span = std::chrono::duration_cast<std::chrono::duration<int,
+            std::ratio<1, 1000000>>>(
+            _tp - tp);
+    return time_span.count();
+}
+
+void Task::SetTimePoint(std::chrono::steady_clock::time_point tp) {
+    _tp = tp;
+}
+
+
+TEvent::TEvent() : _fd(-1), _event(0), _id(-1) {
     _fd = ::timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
     if (_fd < 0) {
         abort();
     }
+
+    _worker = std::make_shared<IndependentThreadVoid>();
 }
 
 TEvent::~TEvent() {
-    Net::Tcp::SocketOpt::Close(_fd);
+    if (!_timer.expired())
+        _timer.lock()->RemoveEvent(_fd);
+    ::close(_fd);
 }
 
 int TEvent::GetFd() const {
     return _fd;
 }
 
-void
-TEvent::SetTime(const int &second, const int &nSecond, const int &intervalSecond, const int &intervalNSecond) {
-    struct itimerspec new_value{};
-
+void TEvent::SetTime(const int &microseconds) const {
+    struct itimerspec new_value{}, old{};
+    int second = microseconds / 1000000;
+    int nsecond = microseconds - second * 1000000;
     new_value.it_value.tv_sec = second;
-    new_value.it_value.tv_nsec = nSecond;
-    new_value.it_interval.tv_sec = intervalSecond;
-    new_value.it_interval.tv_nsec = intervalNSecond;
-    if (intervalSecond || intervalNSecond)
-        _interval = true;
-
-    int ret = timerfd_settime(_fd, 0, &new_value, nullptr);
-    if (ret < 0) {
-        ::close(_fd);
-    }
+    new_value.it_value.tv_nsec = nsecond * 1000;
+    new_value.it_interval.tv_sec = 0;
+    new_value.it_interval.tv_nsec = 0;
+    timerfd_settime(_fd, 0, &new_value, &old);
 }
 
 void TEvent::Loop() {
@@ -50,50 +67,131 @@ void TEvent::Loop() {
     if (res < 0)
         LOG_ERROR("Timer::Loop()");
 
-    if (_func)
-        _func();
+    std::vector<std::shared_ptr<Task>> tasks;
+    auto iter = _taskList.lower_bound(std::pair<std::chrono::steady_clock::time_point, int>(
+            std::chrono::steady_clock::now(), 0));
+    for (auto it = _taskList.begin(); it != iter;) {
+        tasks.emplace_back(_tasks[it->second]);
+        it = _taskList.erase(it);
+    }
 
-    if (!_disconnect)
-        LOG_ERROR("_disconnect is null");
-    if (!_interval)
-        _disconnect(_fd);
+    _worker->AddTask(std::bind(&TEvent::Run, this, tasks));
+
+    ResetTask(tasks);
+}
+
+void TEvent::Run(const std::vector<std::shared_ptr<Task>> &tasks) {
+    for (auto &task: tasks) {
+        task->_func();
+    }
 }
 
 void TEvent::SetEvent(const uint32_t &event) {
     _event = event;
 }
 
-void TEvent::SetCallBack(std::function<void()> func) {
-    _func = std::move(func);
+int TEvent::AddTask(const int &microseconds, const bool &repeat, const std::function<void()> &func) {
+    _id++;
+    int id = _id;
+    std::shared_ptr<Task> task = std::make_shared<Task>(id, microseconds, repeat, func);
+    _thread->AddTask(std::bind(&TEvent::AddTaskInLoop, this, task));
+    return id;
 }
 
-void TEvent::RegisterRemove(std::function<void(const int &)> disconnect) {
-    _disconnect = std::move(disconnect);
+void TEvent::AddTaskInLoop(const std::shared_ptr<Task> &task) {
+    int id = task->_id;
+    _tasks[id] = task;
+    auto time = std::chrono::steady_clock::now() + std::chrono::microseconds(task->_microseconds);
+    auto date = std::pair<std::chrono::steady_clock::time_point, int>(time, id);
+
+    _tasks[id]->SetTimePoint(time);
+
+    if (_taskList.empty()) {
+        SetTime(task->_microseconds);
+    } else if (time.time_since_epoch().count() < _taskList.begin()->first.time_since_epoch().count()) {
+        std::chrono::duration<int, std::ratio<1, 1000000>>
+                time_span = std::chrono::duration_cast<std::chrono::duration<int, std::ratio<1, 1000000>>>(
+                time - std::chrono::steady_clock::now());
+        SetTime(time_span.count());
+    }
+
+    auto pair = _taskList.insert(date);
+    if (!pair.second) {
+        throw "AddTaskAt error";
+    }
 }
 
-Timer::Timer() : _fd(-1), size_(0) {
+void TEvent::RegisterTimer(const std::shared_ptr<Timer> &timer) {
+    _timer = timer;
+}
+
+void TEvent::RegisterThread(const std::shared_ptr<IndependentThreadVoid> &thread) {
+    _thread = thread;
+}
+
+
+void TEvent::Remove(const int &index) {
+    std::unique_lock<std::mutex> _lock;
+
+    auto iter = _tasks.find(index);
+    if (iter != _tasks.end())
+        iter->second->_repeat = false;
+}
+
+void TEvent::ResetTask(const std::vector<std::shared_ptr<Task>> &tasks) {
+    auto time = std::chrono::steady_clock::now();
+
+    for (auto &task: tasks) {
+        if (task->_repeat) {
+            auto rtime = time + std::chrono::microseconds(task->_microseconds);
+            task->SetTimePoint(rtime);
+
+            auto date = std::pair<std::chrono::steady_clock::time_point, int>(rtime, task->_id);
+
+            auto pair = _taskList.insert(date);
+            if (!pair.second) {
+                throw "AddTaskAt error";
+            }
+        } else
+            _tasks.erase(_tasks.find(task->_id));
+    }
+
+    int microseconds = 10000000;
+    if (!_taskList.empty())
+        microseconds = _tasks[_taskList.begin()->second]->Valid(time);
+
+    SetTime(microseconds);
+}
+
+
+Timer::Timer() : _fd(-1), _size(0) {
     _fd = epoll_create(256);
-    events_.resize(16);
+    _events.resize(16);
+    _thread = std::make_shared<IndependentThreadVoid>();
+    _thread->AddTask(std::bind(&Timer::WaitLoop, this));
 }
 
 Timer::~Timer() {
     ::close(_fd);
 }
 
-int Timer::AddEvent(int fd, const std::shared_ptr<TEvent> &event) {
+void Timer::AddEvent(int fd, const std::shared_ptr<TEvent> &event) {
+    event->RegisterThread(_thread);
+    _thread->AddTask(std::bind(&Timer::AddEventInLoop, this, fd, event));
+}
+
+int Timer::AddEventInLoop(int fd, const std::shared_ptr<TEvent> &event) {
     struct epoll_event ev{};
     ev.events = EPOLLIN | EPOLLET;
     ev.data.fd = fd;
     int res = epoll_ctl(_fd, EPOLL_CTL_ADD, fd, &ev);
-    if (res >= 0)
-        size_++;
-
-    std::unique_lock<std::mutex> _lock;
-    auto iter = connections_.find(fd);
-    if (iter != connections_.end())
-        LOG_ERROR("event is existence");
+    if (res >= 0) _size++;
     else
-        connections_[event->GetFd()] = event;
+        LOG_DEBUG(strerror(errno));
+
+    auto iter = _connections.find(fd);
+    if (iter != _connections.end()) LOG_ERROR("event is existence");
+    else _connections[event->GetFd()] = event;
 
     return res;
 }
@@ -104,27 +202,22 @@ int Timer::DELEvent(const int &fd) {
 
     int res = epoll_ctl(_fd, EPOLL_CTL_DEL, fd, &ev);
     if (res >= 0)
-        size_--;
+        _size--;
     return res;
 }
 
-int Timer::GetSize() {
-    return size_;
-}
-
-bool Timer::Empty() {
-    return size_ <= 1;
-}
-
 void Timer::RemoveEvent(const int &fd) {
-    std::unique_lock<std::mutex> _lock;
 
-    auto iter = connections_.find(fd);
-    if (iter != connections_.end()) {
+    _thread->AddTask(std::bind(&Timer::RemoveEventInLoop, this, fd));
+}
+
+void Timer::RemoveEventInLoop(const int &fd) {
+    auto iter = _connections.find(fd);
+    if (iter != _connections.end()) {
         int res = DELEvent(fd);
         if (res < 0)
             LOG_ERROR("remove fd error");
-        connections_.erase(fd);
+        _connections.erase(fd);
     }
 }
 
@@ -133,10 +226,11 @@ int Timer::Wait(int size, std::vector<struct epoll_event> &events, const int &ti
 }
 
 void Timer::WaitLoop() {
-    int num = Wait(size_, events_, 100);
+    int num = Wait(_size, _events, 100);
     for (int i = 0; i < num; ++i) {
-        auto cn = connections_[events_[i].data.fd];
-        cn->SetEvent(events_[i].events);
+        auto cn = _connections[_events[i].data.fd];
+        cn->SetEvent(_events[i].events);
         cn->Loop();
     }
+    _thread->AddTask(std::bind(&Timer::WaitLoop, this));
 }

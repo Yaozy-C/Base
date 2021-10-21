@@ -94,7 +94,9 @@ namespace Base {
             _thread = std::thread(&IndependentThreadVoid::Execute, this);
         };
 
-        ~IndependentThreadVoid() = default;
+        ~IndependentThreadVoid() {
+            Shutdown();
+        };
 
         virtual void Execute() {
             while (!_shutdown) {
@@ -124,7 +126,7 @@ namespace Base {
 
         void Shutdown() {
             while (!_tasks.empty() || _run) {
-                std::this_thread::sleep_for(std::chrono::seconds(10));
+                std::this_thread::sleep_for(std::chrono::microseconds (10));
             }
             _shutdown = true;
             _cv.notify_one();
