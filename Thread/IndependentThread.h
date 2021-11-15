@@ -135,7 +135,7 @@ namespace Base {
         };
 
         template<class F, class...Args>
-        void AddTask(F &&f, Args &&... args) {
+        auto AddTask(F &&f, Args &&... args) {
             auto ptr = std::make_shared<std::packaged_task<decltype(f(args...))()>>(
                     std::bind(std::forward<F>(f), std::forward<Args>(args)...));
             std::function<void()> func = [ptr]() {
@@ -146,6 +146,7 @@ namespace Base {
                 _tasks.emplace_back(func);
             }
             _cv.notify_one();
+            return ptr->get_future();
         }
     };
 }

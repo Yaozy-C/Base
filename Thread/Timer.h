@@ -52,7 +52,7 @@ namespace Base::Thread {
 
         void SetEvent(const uint32_t &event) override;
 
-        int AddTask(const int &second, const bool &repeat, const std::function<void()> &func);
+        int AddTask(const int &microseconds, const bool &repeat, const std::function<void()> &func);
 
         void RegisterTimer(const std::shared_ptr<Timer> &timer);
 
