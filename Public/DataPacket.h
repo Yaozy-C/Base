@@ -94,55 +94,6 @@ namespace Base {
     };
 
 
-    template<typename T>
-    class ObjectList : public DataPacket {
-    private:
-        vector<T> list;
-    public:
-        ObjectList() = default;
-
-        ~ObjectList() = default;
-
-        T &operator[](int index) {
-            return list[index];
-        };
-
-        void Add(T &item) {
-            list.emplace_back(item);
-        };
-
-        void DecodeJson(cJSON *reader) override {
-            list.clear();
-            if (cJSON_IsArray(reader)) {
-                int ArraySize = cJSON_GetArraySize(reader);
-                for (int i = 0; i < ArraySize; ++i) {
-                    cJSON *item = cJSON_GetArrayItem(reader, i);
-                    T tmp;
-                    GetJsonValue(item, tmp);
-                    list.emplace_back(tmp);
-                }
-            }
-        };
-
-        void EncodeJson(cJSON *writer) override {
-            for (int i = 0; i < list.size(); ++i) {
-                cJSON *item = cJSON_Create(list[i]);
-                cJSON_AddItemToArray(writer, item);
-            }
-        };
-
-        cJSON *CreateWriter() override {
-            return cJSON_CreateArray();
-        };
-
-        int Count() {
-            return list.size();
-        };
-
-        vector<T> &Items() {
-            return list;
-        };
-    };
 }
 
 #endif //DATAPACKET_H
