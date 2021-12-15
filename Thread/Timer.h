@@ -17,7 +17,7 @@ namespace Base::Thread {
     class Comp {
     public:
         bool operator()(const std::pair<std::chrono::steady_clock::time_point, int> &x,
-                        const std::pair<std::chrono::steady_clock::time_point, int> &y) {
+                        const std::pair<std::chrono::steady_clock::time_point, int> &y) const{
 
             return x.first.time_since_epoch().count() < y.first.time_since_epoch().count();
         }

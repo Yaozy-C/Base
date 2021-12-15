@@ -1,6 +1,5 @@
 #include "Public/DataPacket.h"
 #include <chrono>
-#include <sys/time.h>
 #include "Timer.h"
 #include "Log.h"
 
