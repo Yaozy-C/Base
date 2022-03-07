@@ -9,3 +9,6 @@ SafeQue：无边界阻塞队列；
 DataPacket：Json数据基类，可实现JSON数据序列化与反序列化，子类需实现EncodeJson与DecodeJson两个函数；  
 LibCurl：基于libcurl的封装类，可实现http客户端功能；  
 TcpServer：基于epoll et的tcp并发服务程序
+
+- JsonGenerator：批量生成C++ Json对象代码，需要添加参数。使用方法： .\JsonGenerator.exe -FilePath ${path}
+- 例：.\JsonGenerator.exe -FilePath .\Json.json
