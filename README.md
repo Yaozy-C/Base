@@ -1,11 +1,12 @@
 # BaseLib
--Buffer:用于流式数据的存储与分割（copy于muduo的buffer）；  
--Pool：简易线程池，会创建CPU数目-2的工作线程，且这些线程会绑定到CPU上执行；  
--Log：简易日志库，支持日志保存与打印，设置保存日志状态时需执行LOG_INIT_FILELOGGER（string path）；path为保存路径（会创建当天的一个log）;  
--IndependentThread：独立任务线程，通常作为基类使用，子类需实现ndependentThread的Run函数，IndependentThread拥有自己的工作队列，运行时会自动读取任务；  
--IndependentThreadVoid：独立任务线程，实例化后，用户只需传入函数指针即可 
--DataPacket：Json数据基类，可实现JSON数据序列化与反序列化，子类需实现EncodeJson与DecodeJson两个函数；  
--LibCurl：基于libcurl的封装类，可实现http客户端功能；  
--TcpServer：基于epoll et的tcp并发服务程序
+- Buffer:用于流式数据的存储与分割（copy于muduo的buffer）；  
+- Pool：简易线程池，会创建CPU数目-2的工作线程，且这些线程会绑定到CPU上执行；  
+- Log：简易日志库，支持日志保存与打印，设置保存日志状态时需执行LOG_INIT_FILELOGGER（string path）；path为保存路径（会创建当天的一个log）;  
+- IndependentThread：独立任务线程，通常作为基类使用，子类需实现ndependentThread的Run函数，IndependentThread拥有自己的工作队列，运行时会自动读取任务；  
+- IndependentThreadVoid：独立任务线程，实例化后，用户只需传入函数指针即可 
+- DataPacket：Json数据基类，可实现JSON数据序列化与反序列化，子类需实现EncodeJson与DecodeJson两个函数；  
+- LibCurl：基于libcurl的封装类，可实现http客户端功能；  
+- TcpServer：基于epoll et的tcp并发服务程序
+- Timer：基于epoll的timer，允许多个event共用一个fd
 - JsonGenerator：批量生成C++ Json对象代码，需要添加参数。使用方法： .\JsonGenerator.exe -FilePath ${path}
 - 例：.\JsonGenerator.exe -FilePath .\Json.json
