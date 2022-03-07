@@ -56,6 +56,16 @@ namespace Base {
 
     cJSON *cJSON_Create(float &value);
 
+    template<typename T>
+    cJSON *cJSON_Create(std::vector<T> &value){
+        cJSON *obj = cJSON_CreateArray();
+        for (int i = 0; i < value.size(); ++i) {
+            cJSON *inode = cJSON_Create(value[i]);
+            cJSON_AddItemToArray(obj, inode);
+        }
+        return obj;
+    }
+
     cJSON *cJSON_Create(DataPacket &value);
 
     template<typename T>
