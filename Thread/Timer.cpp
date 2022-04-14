@@ -131,11 +131,16 @@ void TEvent::RegisterThread(const std::shared_ptr<IndependentThreadVoid> &thread
 
 
 void TEvent::Remove(const int &index) {
-    std::unique_lock<std::mutex> _lock;
+    _thread->AddTask(std::bind(&TEvent::RemoveTaskInLoop, this, index));
+}
 
+void TEvent::RemoveTaskInLoop(const int &index) {
     auto iter = _tasks.find(index);
-    if (iter != _tasks.end())
-        iter->second->_repeat = false;
+    if (iter != _tasks.end()) {
+//        if (iter->second->_repeat)
+//            iter->second->_repeat = false;
+        _tasks.erase(iter);
+    }
 }
 
 void TEvent::ResetTask(const std::vector<std::shared_ptr<Task>> &tasks) {

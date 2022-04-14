@@ -77,6 +77,8 @@ namespace Base::Thread {
         void Run(const std::vector<std::shared_ptr<Task>> &tasks);
 
         void AddTaskInLoop(const std::shared_ptr<Task> &task);
+
+        void RemoveTaskInLoop(const int &index);
     };
 
 
