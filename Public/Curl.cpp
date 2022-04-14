@@ -7,6 +7,8 @@
 
 using namespace std;
 namespace Base {
+    std::atomic<int> init;
+
     LibCurl::LibCurl() {
         if (init == 0) {
             curl_global_init(CURL_GLOBAL_ALL);
@@ -101,7 +103,7 @@ namespace Base {
 
     bool LibCurl::SetProgressDisplay(const bool &status) {
         //设置进度开关
-        code = curl_easy_setopt(curl, CURLOPT_NOPROGRESS, status);
+        code = curl_easy_setopt(curl, CURLOPT_NOPROGRESS, !status);
         //设置进度展示函数
         if (code == CURLE_OK) {
             code = curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, ProgressCallback);
@@ -196,13 +198,13 @@ namespace Base {
         outFile.open(downLoadFilePath, ios::out | ios::app | ios::binary);
         httpCode = DOWNLOAD;
         list = curl_slist_append(list, "Expect:");
-        curl_easy_setopt(curl, CURLOPT_POST, true);
+        curl_easy_setopt(curl, CURLOPT_HTTPGET, true);
         curl_easy_setopt(curl, CURLOPT_URL, address.c_str());
         /*if (FromPtr != nullptr) {
             curl_easy_setopt(Curl, CURLOPT_INFILESIZE_LARGE, FromPtr->bufferlength);
         }
         curl_easy_setopt(Curl, CURLOPT_HTTPPOST, FromPtr);
-    */
+        */
         curl_easy_setopt(curl, CURLOPT_HEADER, 0L);
         code = curl_easy_perform(curl);
         CleanHeaderList();
@@ -256,7 +258,7 @@ namespace Base {
             return 0;
         }
         int nPos = (int) ((dlnow / dltotal) * 100);
-        cout << nPos << endl;
+        cout << "total:"<<dltotal/1024/1024 <<"MB   now:"<< dlnow/1024/1024<<"MB    pos:"<<nPos << endl;
         return 0;
     }
 }

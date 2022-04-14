@@ -14,7 +14,6 @@ namespace Base {
 
     using std::string;
 
-    std::atomic<int> init;
     enum HTTPCode {
         NONE = 0,
         GET,
