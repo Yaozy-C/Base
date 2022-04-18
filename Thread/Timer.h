@@ -56,7 +56,7 @@ namespace Base::Thread {
 
         void RegisterTimer(const std::shared_ptr<Timer> &timer);
 
-        void RegisterThread(const std::shared_ptr<IndependentThreadVoid> &thread);
+        void RegisterThread(const std::shared_ptr<EventLoop> &thread);
 
         void Remove(const int &index);
 
@@ -66,8 +66,8 @@ namespace Base::Thread {
         int _event;
         std::map<int, std::shared_ptr<Task>> _tasks;
         std::set<std::pair<std::chrono::steady_clock::time_point, int>, Comp> _taskList;
-        std::shared_ptr<IndependentThreadVoid> _thread;
-        std::shared_ptr<IndependentThreadVoid> _worker;
+        std::shared_ptr<EventLoop> _thread;
+        std::shared_ptr<EventLoop> _worker;
         std::weak_ptr<Timer> _timer;
 
         void ResetTask(const std::vector<std::shared_ptr<Task>> &tasks);
@@ -82,7 +82,7 @@ namespace Base::Thread {
     };
 
 
-    class Timer {
+class Timer :public std::enable_shared_from_this<Timer>{
     public:
         Timer();
 
@@ -104,7 +104,7 @@ namespace Base::Thread {
         std::atomic<int> _size;
         std::vector<struct epoll_event> _events;
         std::map<int, std::shared_ptr<TEvent>> _connections;
-        std::shared_ptr<IndependentThreadVoid> _thread;
+        std::shared_ptr<EventLoop> _thread;
 
         void RemoveEventInLoop(const int &fd);
 

@@ -20,7 +20,7 @@ TcpServer::~TcpServer() {
 }
 
 void TcpServer::Start() {
-    work_.reset(new IndependentThreadVoid);
+    work_.reset(new EventLoop);
 
     connectManager_.reset(new ConnectManager(independentThreadPool));
     connectManager_->SetServerOnMessage(

@@ -37,7 +37,7 @@ TEvent::TEvent() : _fd(-1), _event(0), _id(-1) {
         abort();
     }
 
-    _worker = std::make_shared<IndependentThreadVoid>();
+    _worker = std::make_shared<EventLoop>();
 }
 
 TEvent::~TEvent() {
@@ -125,7 +125,7 @@ void TEvent::RegisterTimer(const std::shared_ptr<Timer> &timer) {
     _timer = timer;
 }
 
-void TEvent::RegisterThread(const std::shared_ptr<IndependentThreadVoid> &thread) {
+void TEvent::RegisterThread(const std::shared_ptr<EventLoop> &thread) {
     _thread = thread;
 }
 
@@ -172,7 +172,7 @@ void TEvent::ResetTask(const std::vector<std::shared_ptr<Task>> &tasks) {
 Timer::Timer() : _fd(-1), _size(0) {
     _fd = epoll_create(256);
     _events.resize(16);
-    _thread = std::make_shared<IndependentThreadVoid>();
+    _thread = std::make_shared<EventLoop>();
     _thread->AddTask(std::bind(&Timer::WaitLoop, this));
 }
 
@@ -182,6 +182,7 @@ Timer::~Timer() {
 
 void Timer::AddEvent(int fd, const std::shared_ptr<TEvent> &event) {
     event->RegisterThread(_thread);
+    event->RegisterTimer(shared_from_this());
     _thread->AddTask(std::bind(&Timer::AddEventInLoop, this, fd, event));
 }
 
@@ -190,7 +191,11 @@ int Timer::AddEventInLoop(int fd, const std::shared_ptr<TEvent> &event) {
     ev.events = EPOLLIN | EPOLLET;
     ev.data.fd = fd;
     int res = epoll_ctl(_fd, EPOLL_CTL_ADD, fd, &ev);
-    if (res >= 0) _size++;
+    if (res >= 0) {
+        _size++;
+        if (_size > _events.size())
+            _events.resize(_events.size()*1.5);
+    }
     else
         LOG_DEBUG(strerror(errno));
 

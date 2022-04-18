@@ -39,7 +39,7 @@ namespace Base::Net::Tcp::Sockets {
 
         int Wait(int size, std::vector<struct epoll_event> &events, const int &time) const;
 
-        void SetIndependentThreadVoid(const std::shared_ptr<IndependentThreadVoid> &independentThreadVoid);
+        void SetIndependentThreadVoid(const std::shared_ptr<EventLoop> &independentThreadVoid);
 
         bool Looping() { return loop; }
 
@@ -54,7 +54,7 @@ namespace Base::Net::Tcp::Sockets {
         std::vector<struct epoll_event> events_;
         std::map<int, std::shared_ptr<Base::Thread::Event>> connections_;
         std::map<int, std::shared_ptr<int>> ties_;
-        std::shared_ptr<IndependentThreadVoid> independentThreadVoid_;
+        std::shared_ptr<EventLoop> independentThreadVoid_;
         std::atomic<bool> loop;
         int size_;
         int fd_;

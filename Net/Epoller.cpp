@@ -109,7 +109,7 @@ void Epoll::WaitLoop() {
     independentThreadVoid_->AddTask(std::bind(&Epoll::WaitLoop, this));
 }
 
-void Epoll::SetIndependentThreadVoid(const std::shared_ptr<IndependentThreadVoid> &independentThreadVoid) {
+void Epoll::SetIndependentThreadVoid(const std::shared_ptr<EventLoop> &independentThreadVoid) {
     independentThreadVoid_ = independentThreadVoid;
     loop = true;
     independentThreadVoid_->AddTask(std::bind(&Epoll::WaitLoop, this));

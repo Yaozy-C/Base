@@ -25,7 +25,7 @@ using namespace Base::Net::Tcp;
 
 Connection::Connection(int sockfd, const Sockets::InetAddress &localAddr,
                        const Sockets::InetAddress &peerAddr,
-                       const std::weak_ptr<IndependentThreadVoid> &independentThreadVoid) :
+                       const std::weak_ptr<EventLoop> &independentThreadVoid) :
         socket_(new Sockets::Socket(sockfd)),
         peerAddr_(peerAddr), localAddr_(localAddr), input_(new Buffer),
         output_(new Buffer), events_(0) {

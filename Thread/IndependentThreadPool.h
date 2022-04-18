@@ -14,7 +14,7 @@ namespace Base {
         explicit IndependentThreadPool(int size) : size_(size) {
 
             for (int i = 0; i < size_; ++i) {
-                std::shared_ptr<IndependentThreadVoid> independentThreadVoid(new IndependentThreadVoid);
+                std::shared_ptr<EventLoop> independentThreadVoid(new EventLoop);
                 independentVoids[i] = independentThreadVoid;
             }
         };
@@ -26,7 +26,7 @@ namespace Base {
             }
         };
 
-        std::shared_ptr<IndependentThreadVoid> GetIndependentThreadVoid(const int &index) {
+        std::shared_ptr<EventLoop> GetIndependentThreadVoid(const int &index) {
             return independentVoids[index % size_];
         }
 
@@ -36,7 +36,7 @@ namespace Base {
         }
 
     private:
-        std::map<int, std::shared_ptr<IndependentThreadVoid>> independentVoids;
+        std::map<int, std::shared_ptr<EventLoop>> independentVoids;
         int size_;
     };
 }

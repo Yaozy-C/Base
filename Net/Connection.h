@@ -22,7 +22,7 @@ namespace Base::Net::Tcp {
     public:
         explicit Connection(int sockfd, const Sockets::InetAddress &localAddr,
                             const Sockets::InetAddress &peerAddr,
-                            const std::weak_ptr<IndependentThreadVoid> &independentThreadVoid);
+                            const std::weak_ptr<EventLoop> &independentThreadVoid);
 
         ~Connection();
 
@@ -65,7 +65,7 @@ namespace Base::Net::Tcp {
         EpollMod epollMod_;
         DisConnect disConnect_;
         std::atomic<uint32_t> events_;
-        std::weak_ptr<IndependentThreadVoid> independentThreadVoid_;
+        std::weak_ptr<EventLoop> independentThreadVoid_;
         ConnOnMessage onMessage_;
     };
 }

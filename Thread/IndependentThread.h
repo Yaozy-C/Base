@@ -80,7 +80,7 @@ namespace Base {
         virtual void Run(T &task) = 0;
     };
 
-    class IndependentThreadVoid {
+    class EventLoop {
     private:
         std::thread _thread;
         std::mutex mtx;
@@ -90,11 +90,11 @@ namespace Base {
         std::atomic<bool> _run;
     public:
 
-        IndependentThreadVoid() : _shutdown(false), _run(false) {
-            _thread = std::thread(&IndependentThreadVoid::Execute, this);
+        EventLoop() : _shutdown(false), _run(false) {
+            _thread = std::thread(&EventLoop::Execute, this);
         };
 
-        ~IndependentThreadVoid() {
+        ~EventLoop() {
             Shutdown();
         };
 

@@ -31,8 +31,8 @@ namespace Base::Net::Tcp {
         const Sockets::InetAddress localAddr_;
         std::shared_ptr<Base::IndependentThreadPool> independentThreadPool;
 
-        std::shared_ptr<Base::IndependentThreadVoid> independentThreadVoid;
-        std::shared_ptr<Base::IndependentThreadVoid> work_;
+        std::shared_ptr<Base::EventLoop> independentThreadVoid;
+        std::shared_ptr<Base::EventLoop> work_;
         std::shared_ptr<Acceptor> acceptor_;
         std::shared_ptr<ConnectManager> connectManager_;
     };
