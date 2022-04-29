@@ -194,10 +194,11 @@ int Timer::AddEventInLoop(int fd, const std::shared_ptr<TEvent> &event) {
     if (res >= 0) {
         _size++;
         if (_size > _events.size())
-            _events.resize(_events.size()*1.5);
-    }
-    else
+            _events.resize(_events.size() * 1.5);
+    } else {
         LOG_DEBUG(strerror(errno));
+        return res;
+    }
 
     auto iter = _connections.find(fd);
     if (iter != _connections.end()) LOG_ERROR("event is existence");
