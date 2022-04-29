@@ -23,7 +23,8 @@ int main() {
 
         std::shared_ptr<Base::Thread::TEvent> event = std::make_shared<Base::Thread::TEvent>();
         timer->AddEvent(event->GetFd(), event);
-
+        std::shared_ptr<Base::Thread::TEvent> event2 = std::make_shared<Base::Thread::TEvent>();
+        timer->AddEvent(event2->GetFd(), event2);
 //        event->RegisterTimer(timer);
 
         auto date = std::chrono::steady_clock::now() + std::chrono::seconds(2);

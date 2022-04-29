@@ -187,6 +187,12 @@ void Timer::AddEvent(int fd, const std::shared_ptr<TEvent> &event) {
 }
 
 int Timer::AddEventInLoop(int fd, const std::shared_ptr<TEvent> &event) {
+    auto iter = _connections.find(fd);
+    if (iter != _connections.end()) {
+        LOG_ERROR("event is existence");
+        return 0;
+    } else
+        _connections[event->GetFd()] = event;
     struct epoll_event ev{};
     ev.events = EPOLLIN | EPOLLET;
     ev.data.fd = fd;
@@ -197,13 +203,8 @@ int Timer::AddEventInLoop(int fd, const std::shared_ptr<TEvent> &event) {
             _events.resize(_events.size() * 1.5);
     } else {
         LOG_DEBUG(strerror(errno));
-        return res;
+        _connections.erase(fd);
     }
-
-    auto iter = _connections.find(fd);
-    if (iter != _connections.end()) LOG_ERROR("event is existence");
-    else _connections[event->GetFd()] = event;
-
     return res;
 }
 
