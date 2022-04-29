@@ -11,10 +11,7 @@ using namespace Base::Thread;
 
 
 Task::Task(const int &id, const int &microseconds, const bool &repeat, std::function<void()> func) : _microseconds(
-        microseconds),
-                                                                                                     _repeat(
-                                                                                                             repeat),
-                                                                                                     _id(id) {
+        microseconds), _repeat(repeat), _id(id) {
     _func = std::move(func);
 }
 
@@ -153,10 +150,11 @@ void TEvent::ResetTask(const std::vector<std::shared_ptr<Task>> &tasks) {
 
             auto date = std::pair<std::chrono::steady_clock::time_point, int>(rtime, task->_id);
 
-            auto pair = _taskList.insert(date);
-            if (!pair.second) {
-                throw "AddTaskAt error";
-            }
+//            auto pair =
+            _taskList.insert(date);
+//            if (!pair.second) {
+//                throw "AddTaskAt error";
+//            }
         } else
             _tasks.erase(_tasks.find(task->_id));
     }
