@@ -137,9 +137,9 @@ void TEvent::Remove(const int &index) {
 void TEvent::RemoveTaskInLoop(const int &index) {
     auto iter = _tasks.find(index);
     if (iter != _tasks.end()) {
-//        if (iter->second->_repeat)
-//            iter->second->_repeat = false;
-        _tasks.erase(iter);
+        if (iter->second->_repeat)
+            iter->second->_repeat = false;
+//        _tasks.erase(iter);
     }
 }
 

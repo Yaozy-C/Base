@@ -23,17 +23,24 @@ int main() {
 
         std::shared_ptr<Base::Thread::TEvent> event = std::make_shared<Base::Thread::TEvent>();
         timer->AddEvent(event->GetFd(), event);
+
         std::shared_ptr<Base::Thread::TEvent> event2 = std::make_shared<Base::Thread::TEvent>();
         timer->AddEvent(event2->GetFd(), event2);
-//        event->RegisterTimer(timer);
+        LOG_DEBUG("post");
 
         auto date = std::chrono::steady_clock::now() + std::chrono::seconds(2);
-        LOG_DEBUG("post");
         int id = event->AddTask(3000000, true, std::bind(test, 1, date));
+        int id1 = event->AddTask(5000000, true, std::bind(test, 3, date));
 
+        auto date2 = std::chrono::steady_clock::now() + std::chrono::seconds(3);
+        int id2 = event2->AddTask(4000000, true, std::bind(test, 2, date2));
         std::this_thread::sleep_for(std::chrono::seconds(22));
-
+        LOG_DEBUG("start remove");
         event->Remove(id);
+        event->Remove(id1);
+        event2->Remove(id2);
+        LOG_DEBUG("remove end");
+        std::this_thread::sleep_for(std::chrono::seconds(22));
     } catch (const char *msg) {
         LOG_ERROR(msg);
     }
