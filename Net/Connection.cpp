@@ -29,7 +29,7 @@ Connection::Connection(int sockfd, const Sockets::InetAddress &localAddr,
         socket_(new Sockets::Socket(sockfd)),
         peerAddr_(peerAddr), localAddr_(localAddr), input_(new Buffer),
         output_(new Buffer), events_(0) {
-
+    LOG_DEBUG("connect:"+peerAddr_.ToIpPort());
     independentThreadVoid_ = independentThreadVoid;
     socket_->SetKeepAlive(true);
 }
@@ -211,6 +211,7 @@ void Connection::ShutDownInLoop() {
 }
 
 void Connection::ShutDown() {
+    LOG_DEBUG("close:"+peerAddr_.ToIpPort());
     if (disConnect_) {
         disConnect_(socket_->GetFd());
     }

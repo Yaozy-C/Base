@@ -126,7 +126,7 @@ namespace Base {
 
     bool LibCurl::AddHeader(const string &key, const string &value) {
         string Header;
-        Header = key + "=" + value;
+        Header = key + ": " + value;
         list = curl_slist_append(list, Header.c_str());
         code = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
         code = curl_easy_setopt(curl, CURLOPT_QUOTE, list);

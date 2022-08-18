@@ -5,6 +5,7 @@
 #include <functional>
 #include "TcpServer.h"
 #include "Connection.h"
+#include "Log.h"
 
 using namespace Base::Net::Tcp;
 
@@ -32,6 +33,7 @@ void TcpServer::Start() {
     acceptor_->SetNewConnectCallBack(func);
 
     connectManager_->SetListener(fd_, acceptor_);
+    LOG_DEBUG("start listen:"+localAddr_.ToIpPort());
 }
 
 void TcpServer::OnMessage(const std::shared_ptr<Connection> &connection, const std::shared_ptr<Buffer> &buffer) {
@@ -44,5 +46,6 @@ void TcpServer::OnMessage(const std::shared_ptr<Connection> &connection, const s
 void TcpServer::OnMessageInWorker(const std::shared_ptr<Connection> &connection,
                                   const std::shared_ptr<Buffer> &buffer) {
     std::string data = buffer->retrieveAllAsString();
+//    LOG_DEBUG(data);
     connection->Send(data);
 }

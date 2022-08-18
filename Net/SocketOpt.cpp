@@ -111,7 +111,7 @@ ssize_t SocketOpt::Write(int sockfd, const void *buf, size_t len) {
 
 void SocketOpt::Close(int sockfd) {
     if (::close(sockfd) < 0) {
-        LOG_ERROR("close fd err");
+        LOG_ERROR("close fd err:" + std::string(strerror(errno)));
     }
 }
 

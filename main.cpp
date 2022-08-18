@@ -2,6 +2,9 @@
 #include <chrono>
 #include "Timer.h"
 #include "Log.h"
+#include "InetAddress.h"
+#include "TcpServer.h"
+
 using namespace std;
 
 int test(int index, std::chrono::steady_clock::time_point tp) {
@@ -44,6 +47,12 @@ int main() {
     } catch (const char *msg) {
         LOG_ERROR(msg);
     }
+
+
+    Base::Net::Tcp::Sockets::InetAddress inetAddress(4567);
+    Base::Net::Tcp::TcpServer tcpServer(inetAddress);
+    tcpServer.Start();
+    std::this_thread::sleep_for(std::chrono::seconds(3));
 
     return 0;
 }

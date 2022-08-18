@@ -6,6 +6,7 @@
 #include <cassert>
 #include <functional>
 #include "Acceptor.h"
+#include "Log.h"
 
 using namespace Base::Net::Tcp;
 
