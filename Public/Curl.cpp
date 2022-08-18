@@ -125,9 +125,9 @@ namespace Base {
     }
 
     bool LibCurl::AddHeader(const string &key, const string &value) {
-        string Header;
-        Header = key + ": " + value;
-        list = curl_slist_append(list, Header.c_str());
+        string header;
+        header = key + ": " + value;
+        list = curl_slist_append(list, header.c_str());
         code = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
         code = curl_easy_setopt(curl, CURLOPT_QUOTE, list);
         return code == CURLE_OK;
@@ -140,25 +140,25 @@ namespace Base {
     }
 
     void LibCurl::AddForm(const string &key, const string &value, const string &type) {
-        auto *Part = curl_mime_addpart(mime);
-        curl_mime_name(Part, key.c_str());
-        curl_mime_data(Part, value.c_str(), value.size());
-        curl_mime_type(Part, type.c_str());
+        auto *part = curl_mime_addpart(mime);
+        curl_mime_name(part, key.c_str());
+        curl_mime_data(part, value.c_str(), value.size());
+        curl_mime_type(part, type.c_str());
     }
 
     void LibCurl::AddFile(const string &key, const string &filePath, const string &type) {
-        curl_mimepart *Part = curl_mime_addpart(mime);
-        curl_mime_name(Part, key.c_str());
-        curl_mime_filedata(Part, filePath.c_str());
-        curl_mime_type(Part, type.c_str());
+        curl_mimepart *part = curl_mime_addpart(mime);
+        curl_mime_name(part, key.c_str());
+        curl_mime_filedata(part, filePath.c_str());
+        curl_mime_type(part, type.c_str());
     }
 
     void LibCurl::AddMemFile(const string &key, const string &value, const string &fileName, const string &type) {
-        auto *Part = curl_mime_addpart(mime);
-        curl_mime_name(Part, key.c_str());
-        curl_mime_data(Part, value.c_str(), value.size());
-        curl_mime_filename(Part, fileName.c_str());
-        curl_mime_type(Part, type.c_str());
+        auto *part = curl_mime_addpart(mime);
+        curl_mime_name(part, key.c_str());
+        curl_mime_data(part, value.c_str(), value.size());
+        curl_mime_filename(part, fileName.c_str());
+        curl_mime_type(part, type.c_str());
     }
 
     void LibCurl::CleanFrom() {
@@ -217,43 +217,43 @@ namespace Base {
         return curl_easy_strerror(code);
     }
 
-    size_t LibCurl::CallBack(char *ptr, size_t Size, size_t Nmemb, void *UserData) {
-        auto *Ptr = (LibCurl *) UserData;
-        int Len = 0;
-        switch (Ptr->httpCode) {
+    size_t LibCurl::CallBack(char *ptr, size_t size, size_t nmemb, void *userData) {
+        auto *tptr = (LibCurl *) userData;
+        int len = 0;
+        switch (tptr->httpCode) {
             case NONE:
                 break;
             case GET:
-                Len = WriteCallback(ptr, Size, Nmemb, UserData);
+                len = WriteCallback(ptr, size, nmemb, userData);
                 break;
             case POST:
-                Len = WriteCallback(ptr, Size, Nmemb, UserData);
+                len = WriteCallback(ptr, size, nmemb, userData);
                 break;
             case DOWNLOAD:
-                Len = DownLoadCallback(ptr, Size, Nmemb, UserData);
+                len = DownLoadCallback(ptr, size, nmemb, userData);
                 break;
         }
-        return Size * Len;
+        return size * len;
     }
 
-    size_t LibCurl::WriteCallback(char *ptr, size_t size, size_t Nmemb, void *UserData) {
-        auto *Ptr = (LibCurl *) UserData;
-        string &Buffer = *(static_cast<string *>(&Ptr->callBackStr));
-        size_t Len = size * Nmemb;
+    size_t LibCurl::WriteCallback(char *ptr, size_t size, size_t nmemb, void *userData) {
+        auto *tptr = (LibCurl *) userData;
+        string &buffer = *(static_cast<string *>(&tptr->callBackStr));
+        size_t Len = size * nmemb;
         for (size_t i = 0; i < Len; ++i) {
-            Buffer += *ptr;
+            buffer += *ptr;
             ++ptr;
         }
         return Len;
     }
 
-    size_t LibCurl::DownLoadCallback(const char *ptr, size_t Size, size_t Nmemb, void *UserData) {
-        auto *Ptr = (LibCurl *) UserData;
-        Ptr->outFile.write(ptr, Nmemb);
-        return Nmemb;
+    size_t LibCurl::DownLoadCallback(const char *ptr, size_t Size, size_t nmemb, void *userData) {
+        auto *tptr = (LibCurl *) userData;
+        tptr->outFile.write(ptr, nmemb);
+        return nmemb;
     }
 
-    int LibCurl::ProgressCallback(void *UserData, double dltotal, double dlnow, double ultotal, double ulnow) {
+    int LibCurl::ProgressCallback(void *userData, double dltotal, double dlnow, double ultotal, double ulnow) {
         if (dltotal > -0.1 && dltotal < 0.1) {
             return 0;
         }
