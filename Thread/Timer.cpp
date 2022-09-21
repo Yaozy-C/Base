@@ -11,7 +11,7 @@ using namespace Base::Thread;
 
 
 Task::Task(const int &id, const int &microseconds, const bool &repeat, std::function<void()> func) : _microseconds(
-        microseconds), _repeat(repeat), _id(id) {
+        microseconds), _repeat(repeat), _id(id),_run(true) {
     _func = std::move(func);
 }
 
@@ -68,7 +68,8 @@ void TEvent::Loop() {
     auto iter = _taskList.lower_bound(std::pair<std::chrono::steady_clock::time_point, int>(
             std::chrono::steady_clock::now(), 0));
     for (auto it = _taskList.begin(); it != iter;) {
-        tasks.emplace_back(_tasks[it->second]);
+        if (_tasks[it->second]->_run)
+            tasks.emplace_back(_tasks[it->second]);
         it = _taskList.erase(it);
     }
 
@@ -134,9 +135,10 @@ void TEvent::Remove(const int &index) {
 void TEvent::RemoveTaskInLoop(const int &index) {
     auto iter = _tasks.find(index);
     if (iter != _tasks.end()) {
-        if (iter->second->_repeat)
+        if (iter->second->_run) {
+            iter->second->_run = false;
             iter->second->_repeat = false;
-//        _tasks.erase(iter);
+        }
     }
 }
 

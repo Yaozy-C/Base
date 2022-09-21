@@ -33,6 +33,7 @@ namespace Base::Thread {
 
         int _microseconds;
         std::atomic<bool> _repeat;
+        std::atomic<bool> _run;
         int _id;
         std::function<void()> _func;
         std::chrono::steady_clock::time_point _tp;
