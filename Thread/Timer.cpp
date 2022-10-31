@@ -6,12 +6,13 @@
 #include "Log.h"
 #include "SocketOpt.h"
 #include <sys/timerfd.h>
+#include <iostream>
 
 using namespace Base::Thread;
 
 
 Task::Task(const int &id, const int &microseconds, const bool &repeat, std::function<void()> func) : _microseconds(
-        microseconds), _repeat(repeat), _id(id),_run(true) {
+        microseconds), _repeat(repeat), _id(id), _run(true) {
     _func = std::move(func);
 }
 
@@ -51,6 +52,11 @@ void TEvent::SetTime(const int &microseconds) const {
     struct itimerspec new_value{}, old{};
     int second = microseconds / 1000000;
     int nsecond = microseconds - second * 1000000;
+    if (nsecond <= 0) {
+        if (second <= 0)
+            nsecond = 1;
+    }
+//    std::cout << second << "                " << nsecond << std::endl;
     new_value.it_value.tv_sec = second;
     new_value.it_value.tv_nsec = nsecond * 1000;
     new_value.it_interval.tv_sec = 0;
@@ -72,7 +78,6 @@ void TEvent::Loop() {
             tasks.emplace_back(_tasks[it->second]);
         it = _taskList.erase(it);
     }
-
     _worker->AddTask(std::bind(&TEvent::Run, this, tasks));
 
     ResetTask(tasks);
@@ -239,6 +244,7 @@ int Timer::Wait(int size, std::vector<struct epoll_event> &events, const int &ti
 
 void Timer::WaitLoop() {
     int num = Wait(_size, _events, 100);
+//    std::cout << "num:" << num << "    size:" << std::endl;
     for (int i = 0; i < num; ++i) {
         auto cn = _connections[_events[i].data.fd];
         cn->SetEvent(_events[i].events);
