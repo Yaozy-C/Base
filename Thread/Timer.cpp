@@ -94,8 +94,14 @@ void TEvent::SetEvent(const uint32_t &event) {
 }
 
 int TEvent::AddTask(const int &microseconds, const bool &repeat, const std::function<void()> &func) {
-    _id++;
-    int id = _id;
+    int id = 0;
+    {
+        std::unique_lock<std::mutex> lock(_mtx);
+        _id++;
+        id = _id;
+
+    }
+    std::multimap
     std::shared_ptr<Task> task = std::make_shared<Task>(id, microseconds, repeat, func);
     _thread->AddTask(std::bind(&TEvent::AddTaskInLoop, this, task));
     return id;

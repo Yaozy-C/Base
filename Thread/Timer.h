@@ -71,6 +71,7 @@ namespace Base::Thread {
         std::shared_ptr<EventLoop> _thread;
         std::shared_ptr<EventLoop> _worker;
         std::weak_ptr<Timer> _timer;
+        std::mutex _mtx;
 
         void ResetTask(const std::vector<std::shared_ptr<Task>> &tasks);
 
