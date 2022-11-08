@@ -187,7 +187,10 @@ Timer::Timer() : _fd(-1), _size(0) {
 }
 
 Timer::~Timer() {
-    ::close(_fd);
+    auto fd = _fd;
+    _thread->AddTask([fd]{
+        ::close(fd);
+    });
 }
 
 void Timer::AddEvent(int fd, const std::shared_ptr<TEvent> &event) {

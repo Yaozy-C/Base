@@ -153,8 +153,10 @@ namespace Base {
 
     std::string GetTime() {
         time_t now = time(nullptr);
+        struct tm tm{};
         char buf[24] = {0};
-        strftime(buf, 24, "%Y-%m-%d %H:%M:%S", localtime(&now));
+        localtime_r(&now,&tm);
+        strftime(buf, 24, "%Y-%m-%d %H:%M:%S", &tm);
         return buf;
     }
 

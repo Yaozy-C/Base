@@ -125,7 +125,12 @@ namespace Base {
         };
 
         void Shutdown() {
-            while (!_tasks.empty() || _run) {
+            bool empty = false;
+            while (!empty || _run) {
+                {
+                    std::unique_lock<std::mutex> lock(mtx);
+                    empty = _tasks.empty();
+                }
                 std::this_thread::sleep_for(std::chrono::microseconds (10));
             }
             _shutdown = true;
