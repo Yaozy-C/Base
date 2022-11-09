@@ -88,10 +88,10 @@ namespace Base {
         std::atomic<bool> _shutdown;
         std::vector<std::function<void()>> _tasks;
         std::atomic<bool> _run;
+        std::atomic<bool> _init;
     public:
 
-        EventLoop() : _shutdown(false), _run(false) {
-            _thread = std::thread(&EventLoop::Execute, this);
+        EventLoop() : _shutdown(false), _run(false),_init(false) {
         };
 
         ~EventLoop() {
@@ -149,6 +149,10 @@ namespace Base {
             {
                 std::unique_lock<std::mutex> lock(mtx);
                 _tasks.emplace_back(func);
+                if (!_init) {
+                    _thread = std::thread(&EventLoop::Execute, this);
+                    _init = true;
+                }
             }
             _cv.notify_one();
             return ptr->get_future();

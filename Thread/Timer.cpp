@@ -78,7 +78,7 @@ void TEvent::Loop() {
             tasks.emplace_back(_tasks[it->second]);
         it = _taskList.erase(it);
     }
-    _worker->AddTask(std::bind(&TEvent::Run, this, tasks));
+    _worker->AddTask([this, tasks] { Run(tasks); });
 
     ResetTask(tasks);
 }
@@ -102,7 +102,7 @@ int TEvent::AddTask(const int &microseconds, const bool &repeat, const std::func
 
     }
     std::shared_ptr<Task> task = std::make_shared<Task>(id, microseconds, repeat, func);
-    _thread->AddTask(std::bind(&TEvent::AddTaskInLoop, this, task));
+    _thread->AddTask([this, task] { AddTaskInLoop(task); });
     return id;
 }
 
@@ -125,7 +125,7 @@ void TEvent::AddTaskInLoop(const std::shared_ptr<Task> &task) {
 
     auto pair = _taskList.insert(date);
     if (!pair.second) {
-        throw "AddTaskAt error";
+        throw std::runtime_error("AddTaskAt error");
     }
 }
 
@@ -139,7 +139,7 @@ void TEvent::RegisterThread(const std::shared_ptr<EventLoop> &thread) {
 
 
 void TEvent::Remove(const int &index) {
-    _thread->AddTask(std::bind(&TEvent::RemoveTaskInLoop, this, index));
+    _thread->AddTask([this, index] { RemoveTaskInLoop(index); });
 }
 
 void TEvent::RemoveTaskInLoop(const int &index) {
@@ -179,16 +179,15 @@ void TEvent::ResetTask(const std::vector<std::shared_ptr<Task>> &tasks) {
 }
 
 
-Timer::Timer() : _fd(-1), _size(0) {
+Timer::Timer() : _fd(-1), _size(0), _init(false) {
     _fd = epoll_create(256);
     _events.resize(16);
     _thread = std::make_shared<EventLoop>();
-    _init = false;
 }
 
 Timer::~Timer() {
     auto fd = _fd;
-    _thread->AddTask([fd]{
+    _thread->AddTask([fd] {
         ::close(fd);
     });
 }
@@ -196,9 +195,9 @@ Timer::~Timer() {
 void Timer::AddEvent(int fd, const std::shared_ptr<TEvent> &event) {
     event->RegisterThread(_thread);
     event->RegisterTimer(shared_from_this());
-    _thread->AddTask(std::bind(&Timer::AddEventInLoop, this, fd, event));
+    _thread->AddTask([this, fd, event] { AddEventInLoop(fd, event); });
     if (!_init) {
-        _thread->AddTask(std::bind(&Timer::WaitLoop, this));
+        _thread->AddTask([this] { WaitLoop(); });
         _init = true;
     }
 }
@@ -236,8 +235,7 @@ int Timer::DELEvent(const int &fd) {
 }
 
 void Timer::RemoveEvent(const int &fd) {
-
-    _thread->AddTask(std::bind(&Timer::RemoveEventInLoop, this, fd));
+    _thread->AddTask([this, fd] { RemoveEventInLoop(fd); });
 }
 
 void Timer::RemoveEventInLoop(const int &fd) {
@@ -262,5 +260,5 @@ void Timer::WaitLoop() {
         cn->SetEvent(_events[i].events);
         cn->Loop();
     }
-    _thread->AddTask(std::bind(&Timer::WaitLoop, this));
+    _thread->AddTask([this] { WaitLoop(); });
 }
