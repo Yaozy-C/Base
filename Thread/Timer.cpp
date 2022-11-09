@@ -183,7 +183,7 @@ Timer::Timer() : _fd(-1), _size(0) {
     _fd = epoll_create(256);
     _events.resize(16);
     _thread = std::make_shared<EventLoop>();
-    _thread->AddTask(std::bind(&Timer::WaitLoop, this));
+    _init = false;
 }
 
 Timer::~Timer() {
@@ -197,6 +197,10 @@ void Timer::AddEvent(int fd, const std::shared_ptr<TEvent> &event) {
     event->RegisterThread(_thread);
     event->RegisterTimer(shared_from_this());
     _thread->AddTask(std::bind(&Timer::AddEventInLoop, this, fd, event));
+    if (!_init) {
+        _thread->AddTask(std::bind(&Timer::WaitLoop, this));
+        _init = true;
+    }
 }
 
 int Timer::AddEventInLoop(int fd, const std::shared_ptr<TEvent> &event) {

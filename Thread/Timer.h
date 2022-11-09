@@ -105,6 +105,7 @@ class Timer :public std::enable_shared_from_this<Timer>{
 
         int _fd;
         std::atomic<int> _size;
+        std::atomic<bool> _init;
         std::vector<struct epoll_event> _events;
         std::map<int, std::shared_ptr<TEvent>> _connections;
         std::shared_ptr<EventLoop> _thread;
