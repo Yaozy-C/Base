@@ -76,10 +76,11 @@ void TEvent::Loop() {
     for (auto it = _taskList.begin(); it != iter;) {
         if (_tasks[it->second]->_run)
             tasks.emplace_back(_tasks[it->second]);
+        else
+            _tasks.erase(it->second);
         it = _taskList.erase(it);
     }
     _worker->AddTask([this, tasks] { Run(tasks); });
-
     ResetTask(tasks);
 }
 
@@ -156,24 +157,21 @@ void TEvent::ResetTask(const std::vector<std::shared_ptr<Task>> &tasks) {
     auto time = std::chrono::steady_clock::now();
 
     for (auto &task: tasks) {
-        if (task->_repeat) {
+        if (task->_repeat && task->_run) {
             auto rtime = time + std::chrono::microseconds(task->_microseconds);
             task->SetTimePoint(rtime);
-
             auto date = std::pair<std::chrono::steady_clock::time_point, int>(rtime, task->_id);
-
-//            auto pair =
             _taskList.insert(date);
-//            if (!pair.second) {
-//                throw "AddTaskAt error";
-//            }
-        } else
+        } else {
             _tasks.erase(_tasks.find(task->_id));
+        }
     }
 
     int microseconds = 10000000;
-    if (!_taskList.empty())
+
+    if (!_taskList.empty()) {
         microseconds = _tasks[_taskList.begin()->second]->Valid(time);
+    }
 
     SetTime(microseconds);
 }
