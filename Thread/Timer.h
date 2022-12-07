@@ -61,13 +61,13 @@ namespace Base::Thread {
 
     class Task {
     public:
-        Task(const uint64_t &id, const int &microseconds, const bool &repeat, std::function<void()> _task);
+        Task(const uint64_t &id, const std::chrono::microseconds &milliseconds, const bool &repeat, std::function<void()> _task);
 
-        [[nodiscard]] int Valid(std::chrono::steady_clock::time_point tp) const;
+         std::chrono::microseconds Valid(std::chrono::steady_clock::time_point tp) const ;
 
         void SetTimePoint(std::chrono::steady_clock::time_point tp);
 
-        int _microseconds;
+        std::chrono::microseconds _microseconds;
         std::atomic<bool> _repeat;
         std::atomic<bool> _run;
         uint64_t _id;
@@ -89,7 +89,7 @@ namespace Base::Thread {
 
         void SetEvent(const uint32_t &event) override;
 
-        uint64_t AddTask(const int &microseconds, const bool &repeat, const std::function<void()> &func);
+        uint64_t AddTask(const std::chrono::microseconds &microseconds, const bool &repeat, const std::function<void()> &func);
 
         void RegisterTimer(const std::shared_ptr<Timer> &timer);
 
@@ -109,7 +109,7 @@ namespace Base::Thread {
 
         void ResetTask(const std::vector<std::shared_ptr<Task>> &tasks);
 
-        void SetTime(const int &second) const;
+        void SetTime(const std::chrono::microseconds &second) const;
 
         void Run(const std::vector<std::shared_ptr<Task>> &tasks);
 

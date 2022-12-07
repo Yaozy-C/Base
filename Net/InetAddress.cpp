@@ -70,7 +70,7 @@ bool InetAddress::Resolve(const std::string &hostname, InetAddress *out) {
         return true;
     } else {
         if (ret) {
-            LOG_ERROR("InetAddress::Resolve " + std::to_string(ret));
+            ERROR << "InetAddress::Resolve " << ret;
         }
         return false;
     }

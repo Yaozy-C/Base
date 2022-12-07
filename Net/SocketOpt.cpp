@@ -40,7 +40,7 @@ const struct sockaddr_in *SocketOpt::SockAddrCast(const struct sockaddr *addr) {
 int SocketOpt::CreateNoBlock(sa_family_t family) {
     int sockfd = ::socket(family, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_TCP);
     if (sockfd < 0) {
-        LOG_ERROR("create no block err");
+        ERROR << "create no block err";
     }
     return sockfd;
 }
@@ -48,14 +48,14 @@ int SocketOpt::CreateNoBlock(sa_family_t family) {
 void SocketOpt::Bind(int sockfd, const struct sockaddr *addr) {
     int ret = ::bind(sockfd, addr, static_cast<socklen_t>(sizeof(struct sockaddr_in6)));
     if (ret < 0) {
-        LOG_ERROR(std::to_string(ret));
+        ERROR << ret;
     }
 }
 
 void SocketOpt::Listen(int sockfd) {
     int ret = ::listen(sockfd, SOMAXCONN);
     if (ret < 0) {
-        LOG_ERROR(std::to_string(ret));
+        ERROR << ret;
     }
 }
 
@@ -83,10 +83,10 @@ int SocketOpt::Accept(int sockfd, struct sockaddr_in6 *addr) {
             case ENOMEM:
             case ENOTSOCK:
             case EOPNOTSUPP:
-                LOG_ERROR(std::to_string(savedErrno));
+                ERROR << savedErrno;
                 break;
             default:
-                LOG_ERROR(std::to_string(savedErrno));
+                ERROR << savedErrno;
                 break;
         }
     }
@@ -111,14 +111,14 @@ ssize_t SocketOpt::Write(int sockfd, const void *buf, size_t len) {
 
 void SocketOpt::Close(int sockfd) {
     if (::close(sockfd) < 0) {
-        LOG_ERROR("close fd err:" + std::string(strerror(errno)));
+        ERROR << "close fd err:" << strerror(errno);
     }
 }
 
 void SocketOpt::ShutdownWrite(int sockfd) {
     if (::shutdown(sockfd, SHUT_WR) < 0) {
         perror("SocketOpt::shutdownWrite:");
-        LOG_ERROR("SocketOpt::shutdownWrite");
+        ERROR << "SocketOpt::shutdownWrite";
     }
 }
 
@@ -147,7 +147,7 @@ void SocketOpt::FromIpPort(const char *ip, uint16_t port, struct sockaddr_in *ad
     addr->sin_port = htobe16(port);
     if (::inet_pton(AF_INET, ip, &addr->sin_addr) <= 0) {
 //        LOG_SYSERR << "SocketOpt::fromIpPort";
-        LOG_ERROR("inet_pton err");
+        ERROR << "inet_pton err";
     }
 }
 
@@ -156,7 +156,7 @@ void SocketOpt::FromIpPort(const char *ip, uint16_t port, struct sockaddr_in6 *a
     addr->sin6_port = htobe16(port);
     if (::inet_pton(AF_INET6, ip, &addr->sin6_addr) <= 0) {
 //        LOG_SYSERR << "SocketOpt::fromIpPort";
-        LOG_ERROR("inet_pton err");
+        ERROR << "inet_pton err";
     }
 }
 
@@ -176,7 +176,7 @@ struct sockaddr_in6 SocketOpt::GetLocalAddr(int sockfd) {
     MemZero(&localaddr, sizeof localaddr);
     auto addrlen = static_cast<socklen_t>(sizeof localaddr);
     if (::getsockname(sockfd, SockAddrCast(&localaddr), &addrlen) < 0) {
-        LOG_ERROR("SocketOpt::GetLocalAddr");
+        ERROR << "SocketOpt::GetLocalAddr";
     }
     return localaddr;
 }
@@ -187,7 +187,7 @@ struct sockaddr_in6 SocketOpt::GetPeerAddr(int sockfd) {
     auto addrlen = static_cast<socklen_t>(sizeof peeraddr);
     if (::getpeername(sockfd, SockAddrCast(&peeraddr), &addrlen) < 0) {
 //        LOG_SYSERR << "SocketOpt::getLocalAddr";
-        LOG_ERROR("getpeername err");
+        ERROR << "getpeername err";
     }
     return peeraddr;
 }

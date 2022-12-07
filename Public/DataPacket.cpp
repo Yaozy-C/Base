@@ -66,7 +66,7 @@ namespace Base {
         try {
             EncodeJson(writer);
         } catch (...) {
-            LOG_ERROR("Encode json error");
+            ERROR << "Encode json error";
         }
         char *p = cJSON_PrintUnformatted(writer);
         string json = p;
@@ -81,11 +81,11 @@ namespace Base {
             try {
                 DecodeJson(reader);
             } catch (...) {
-                LOG_ERROR("Decode json error");
+                ERROR << "Decode json error";
             }
             cJSON_Delete(reader);
         } else {
-            LOG_ERROR("This text isn't a json string!");
+            ERROR << "This text isn't a json string!";
         }
     }
 

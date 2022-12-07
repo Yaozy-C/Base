@@ -13,7 +13,7 @@ namespace {
     public:
         IgnoreSigPipe() {
             ::signal(SIGPIPE, SIG_IGN);
-            LOG_DEBUG("Ignore SIGPIPE");
+            DEBUG << "Ignore SIGPIPE";
         }
     };
 
@@ -29,7 +29,7 @@ Connection::Connection(int sockfd, const Sockets::InetAddress &localAddr,
         socket_(new Sockets::Socket(sockfd)),
         peerAddr_(peerAddr), localAddr_(localAddr), input_(new Buffer),
         output_(new Buffer), events_(0) {
-    LOG_DEBUG("connect:"+peerAddr_.ToIpPort());
+    DEBUG << "connect:" << peerAddr_.ToIpPort();
     independentThreadVoid_ = independentThreadVoid;
     socket_->SetKeepAlive(true);
 }
@@ -40,7 +40,7 @@ int Connection::Send(const std::string &message) {
 
     if (!output_->empty()) {
         output_->readFd(message.data(), message.length());
-        int res = epollMod_(socket_->GetFd(),EPOLLOUT | EPOLLET);
+        int res = epollMod_(socket_->GetFd(), EPOLLOUT | EPOLLET);
         if (res < 0)
             ShutDown();
         return 0;
@@ -128,19 +128,19 @@ void Connection::SetEvent(const uint32_t &event) {
 
 int EventsToString(uint32_t ev) {
     if (ev & EPOLLIN)
-        LOG_DEBUG("POLLIN");
+        DEBUG << "POLLIN";
     if (ev & EPOLLPRI)
-        LOG_DEBUG("POLLPRI");
+        DEBUG << "POLLPRI";
     if (ev & EPOLLOUT)
-        LOG_DEBUG("POLLOUT");
+        DEBUG << "POLLOUT";
     if (ev & EPOLLHUP)
-        LOG_DEBUG("POLLHUP");
+        DEBUG << "POLLHUP";
     if (ev & EPOLLRDHUP)
-        LOG_DEBUG("POLLRDHUP");
+        DEBUG << "POLLRDHUP";
     if (ev & EPOLLERR)
-        LOG_DEBUG("POLLERR");
+        DEBUG << "POLLERR";
     if (ev & EINVAL)
-        LOG_DEBUG("POLLNVAL");
+        DEBUG << "POLLNVAL";
 
     return 0;
 }
@@ -211,7 +211,7 @@ void Connection::ShutDownInLoop() {
 }
 
 void Connection::ShutDown() {
-    LOG_DEBUG("close:"+peerAddr_.ToIpPort());
+    DEBUG << "close:" << peerAddr_.ToIpPort();
     if (disConnect_) {
         disConnect_(socket_->GetFd());
     }

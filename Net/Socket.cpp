@@ -71,7 +71,7 @@ void Socket::SetReusePort(bool on) const {
     int ret = ::setsockopt(sockfd_, SOL_SOCKET, SO_REUSEPORT,
                            &optval, static_cast<socklen_t>(sizeof optval));
     if (ret < 0 && on) {
-        LOG_ERROR("SetReusePort failed");
+        ERROR << "SetReusePort failed";
     }
 }
 
@@ -86,7 +86,7 @@ void Socket::SetReuseAddr(bool on) const {
     int ret = ::setsockopt(sockfd_, SOL_SOCKET, SO_REUSEADDR,
                            &optval, static_cast<socklen_t>(sizeof optval));
     if (ret < 0 && on) {
-        LOG_ERROR("SetReuseAddr failed");
+        ERROR << "SetReuseAddr failed";
     }
 }
 

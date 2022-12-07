@@ -3,25 +3,25 @@
 //
 
 #include "Timer.h"
-//#include "Log.h"
 #include "SocketOpt.h"
+#include "Log.h"
 #include <sys/timerfd.h>
 #include <iostream>
 
 using namespace Base::Thread;
 
 
-Task::Task(const uint64_t &id, const int &microseconds, const bool &repeat, std::function<void()> func) : _microseconds(
+Task::Task(const uint64_t &id, const std::chrono::microseconds &microseconds, const bool &repeat,
+           std::function<void()> func) : _microseconds(
         microseconds), _repeat(repeat), _id(id), _run(true) {
     _func = std::move(func);
 }
 
-int Task::Valid(std::chrono::steady_clock::time_point tp) const {
+std::chrono::microseconds Task::Valid(std::chrono::steady_clock::time_point tp) const {
 
     std::chrono::duration<int, std::ratio<1, 1000000>> time_span = std::chrono::duration_cast<std::chrono::duration<int,
-            std::ratio<1, 1000000>>>(
-            _tp - tp);
-    return time_span.count();
+            std::ratio<1, 1000000>>>(_tp - tp);
+    return time_span;
 }
 
 void Task::SetTimePoint(std::chrono::steady_clock::time_point tp) {
@@ -48,18 +48,19 @@ int TEvent::GetFd() const {
     return _fd;
 }
 
-void TEvent::SetTime(const int &microseconds) const {
+void TEvent::SetTime(const std::chrono::microseconds &microseconds) const {
     struct itimerspec new_value{}, old{};
-    int second = microseconds / 1000000;
-    int nsecond = microseconds - second * 1000000;
+    auto second = microseconds / std::chrono::seconds(1);
+
+    auto microsecond = (microseconds - std::chrono::seconds(second)) / std::chrono::microseconds(1);
     if (second < 0)
         second = 0;
 
-    if (nsecond <= 0)
-        nsecond = 1;
+    if (microsecond <= 0)
+        microsecond = 1;
 
     new_value.it_value.tv_sec = second;
-    new_value.it_value.tv_nsec = nsecond * 1000;
+    new_value.it_value.tv_nsec = microsecond * 1000;
     new_value.it_interval.tv_sec = 0;
     new_value.it_interval.tv_nsec = 0;
     timerfd_settime(_fd, 0, &new_value, &old);
@@ -68,9 +69,8 @@ void TEvent::SetTime(const int &microseconds) const {
 void TEvent::Loop() {
     uint64_t exp = 0;
     size_t res = read(_fd, &exp, sizeof(uint64_t));
-//    if (res < 0)
-//        LOG_ERROR("Timer::Loop()");
-//    std::cout<<_tasks.size()<<"||"<<_taskList.size()<<std::endl;
+    if (res < 0)
+        ERROR << "Timer::Loop()";
     std::vector<std::shared_ptr<Task>> tasks;
     auto iter = _taskList.lower_bound(std::pair<std::chrono::steady_clock::time_point, int>(
             std::chrono::steady_clock::now(), 0));
@@ -107,7 +107,7 @@ void TEvent::ResetTask(const std::vector<std::shared_ptr<Task>> &tasks) {
     }
     auto time = std::chrono::steady_clock::now();
 
-    int microseconds = 10000000;
+    auto microseconds = std::chrono::microseconds(1 * 1000000);
     if (!_taskList.empty()) {
         microseconds = _tasks[_taskList.begin()->second]->Valid(time);
     }
@@ -124,7 +124,8 @@ void TEvent::SetEvent(const uint32_t &event) {
     _event = event;
 }
 
-uint64_t TEvent::AddTask(const int &microseconds, const bool &repeat, const std::function<void()> &func) {
+uint64_t
+TEvent::AddTask(const std::chrono::microseconds &microseconds, const bool &repeat, const std::function<void()> &func) {
     auto id = gen.getId();
     std::shared_ptr<Task> task = std::make_shared<Task>(id, microseconds, repeat, func);
     _thread->AddTask([this, task] { AddTaskInLoop(task); });
@@ -132,7 +133,7 @@ uint64_t TEvent::AddTask(const int &microseconds, const bool &repeat, const std:
 }
 
 void TEvent::AddTaskInLoop(const std::shared_ptr<Task> &task) {
-    int id = task->_id;
+    uint64_t id = task->_id;
     _tasks[id] = task;
     auto time = std::chrono::steady_clock::now() + std::chrono::microseconds(task->_microseconds);
     auto date = std::pair<std::chrono::steady_clock::time_point, int>(time, id);
@@ -145,7 +146,7 @@ void TEvent::AddTaskInLoop(const std::shared_ptr<Task> &task) {
         std::chrono::duration<int, std::ratio<1, 1000000>>
                 time_span = std::chrono::duration_cast<std::chrono::duration<int, std::ratio<1, 1000000>>>(
                 time - std::chrono::steady_clock::now());
-        SetTime(time_span.count());
+        SetTime(time_span);
     }
 
     auto pair = _taskList.insert(date);
@@ -203,7 +204,7 @@ void Timer::AddEvent(int fd, const std::shared_ptr<TEvent> &event) {
 int Timer::AddEventInLoop(int fd, const std::shared_ptr<TEvent> &event) {
     auto iter = _connections.find(fd);
     if (iter != _connections.end()) {
-//        LOG_ERROR("event is existence");
+        ERROR << "event is existence";
         return 0;
     } else
         _connections[event->GetFd()] = event;
@@ -216,7 +217,6 @@ int Timer::AddEventInLoop(int fd, const std::shared_ptr<TEvent> &event) {
         if (_size > _events.size())
             _events.resize(_events.size() * 1.5);
     } else {
-//        LOG_DEBUG(strerror(errno));
         _connections.erase(fd);
     }
     return res;
@@ -240,8 +240,8 @@ void Timer::RemoveEventInLoop(const int &fd) {
     auto iter = _connections.find(fd);
     if (iter != _connections.end()) {
         int res = DELEvent(fd);
-//        if (res < 0)
-//            LOG_ERROR("remove fd error");
+        if (res < 0)
+            ERROR << "remove fd error:" << res;
         _connections.erase(fd);
     }
 }

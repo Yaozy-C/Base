@@ -9,94 +9,51 @@
 #include <mutex>
 #include <thread>
 #include <fstream>
-#include "../Thread/IndependentThread.h"
+#include <sstream>
+#include <iostream>
 
-#define LOG_TRACE(msg) Base::Trace(msg,__FILE__,__LINE__,__FUNCTION__)
-#define LOG_DEBUG(msg) Base::Debug(msg,__FILE__,__LINE__,__FUNCTION__)
-#define LOG_INFO(msg) Base::Info(msg,__FILE__,__LINE__,__FUNCTION__)
-#define LOG_WARN(msg) Base::Warn(msg,__FILE__,__LINE__,__FUNCTION__)
-#define LOG_ERROR(msg) Base::Error(msg,__FILE__,__LINE__,__FUNCTION__)
-#define LOG_INIT_LOGGER() Base::LogInit()
-#define LOG_INIT_FILE_LOGGER(msg) Base::LogInit(msg)
-#define LOG_SET_LEVEL(level) Base::SetLevel(level)
-#define LOG_SET_ROLLOVER(day) Base::SetLogRollover(day)
-
-#define ERROR Base::ILog::LOGLEVEL::error
-#define WARN Base::ILog::LOGLEVEL::warn
-#define INFO Base::ILog::LOGLEVEL::info
-#define DEBUG Base::ILog::LOGLEVEL::debug
-
+#define DEBUG Base::Logger(Base::LOGLEVEL::debug).stream(__FILE__,__LINE__,__FUNCTION__)
+#define INFO Base::Logger(Base::LOGLEVEL::info).stream(__FILE__,__LINE__,__FUNCTION__)
+#define WARN Base::Logger(Base::LOGLEVEL::warn).stream(__FILE__,__LINE__,__FUNCTION__)
+#define ERROR Base::Logger(Base::LOGLEVEL::error).stream(__FILE__,__LINE__,__FUNCTION__)
+#define TRACE Base::Logger(Base::LOGLEVEL::trace).stream(__FILE__,__LINE__,__FUNCTION__)
 
 namespace Base {
-
-    class ILog {
-    public:
-        enum class LOGLEVEL {
-            error = 0,
-            warn = 1,
-            info = 2,
-            debug = 3,
-            trace = 4
-        };
-
-        ILog() = default;
-
-        virtual ~ILog() = default;
-
-        ILog(const ILog &) = default;
-
-        ILog &operator=(const ILog &) = default;
-
-    public:
-
-        virtual void
-        Trace(const std::string &msg, const std::string &file, std::size_t line, const std::string &func) = 0;
-
-        virtual void
-        Debug(const std::string &msg, const std::string &file, std::size_t line, const std::string &func) = 0;
-
-        virtual void
-        Info(const std::string &msg, const std::string &file, std::size_t line, const std::string &func) = 0;
-
-        virtual void
-        Warn(const std::string &msg, const std::string &file, std::size_t line, const std::string &func) = 0;
-
-        virtual void
-        Error(const std::string &msg, const std::string &file, std::size_t line, const std::string &func) = 0;
-
-        virtual void ReSetLogLevel(ILog::LOGLEVEL level) = 0;
+    enum class LOGLEVEL {
+        error = 0,
+        warn = 1,
+        info = 2,
+        debug = 3,
+        trace = 4
     };
-
-    class Logger : public ILog {
+    class Logger {
     public:
         explicit Logger(LOGLEVEL level = LOGLEVEL::info);
 
-        ~Logger() override = default;
+        ~Logger()  {
+            std::cout << _stream.str() << std::endl ;
+        };
 
         Logger(const Logger &) = delete;
 
         Logger &operator=(const Logger &) = delete;
 
+        template<typename T>
+        inline Logger &operator<<(const T &info) {
+            _stream << info;
+            return *this;
+        };
+
+        Logger &stream(const std::string &file, std::size_t line, const std::string &func);
     public:
 
-        void Trace(const std::string &msg, const std::string &file, std::size_t line, const std::string &func) override;
-
-        void Debug(const std::string &msg, const std::string &file, std::size_t line, const std::string &func) override;
-
-        void Info(const std::string &msg, const std::string &file, std::size_t line, const std::string &func) override;
-
-        void Warn(const std::string &msg, const std::string &file, std::size_t line, const std::string &func) override;
-
-        void Error(const std::string &msg, const std::string &file, std::size_t line, const std::string &func) override;
-
-        void ReSetLogLevel(ILog::LOGLEVEL level) override;
-
     private:
-        LOGLEVEL level;
+        LOGLEVEL _level;
+        std::ostringstream _stream;
     };
 
 
-    class FileLogger : public ILog, public IndependentThread<std::string> {
+    /*class FileLogger : public ILog, public IndependentThread<std::string> {
 
     public:
 
@@ -158,7 +115,7 @@ namespace Base {
 
     void SetLevel(ILog::LOGLEVEL level);
 
-    void SetLogRollover(const int &day);
+    void SetLogRollover(const int &day);*/
 }
 
 

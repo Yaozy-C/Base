@@ -25,20 +25,19 @@ void TcpServer::Start() {
 
     connectManager_.reset(new ConnectManager(independentThreadPool));
     connectManager_->SetServerOnMessage(
-            std::bind(&TcpServer::OnMessage, this, std::placeholders::_1, std::placeholders::_2));
+            [this](auto && PH1, auto && PH2) { OnMessage(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2)); });
     acceptor_.reset(new Acceptor(fd_, localAddr_));
     acceptor_->Listen();
-    NewConnectionCallback func = std::bind(&ConnectManager::NewConnection, connectManager_.get(), std::placeholders::_1,
-                                           localAddr_, std::placeholders::_2);
+    NewConnectionCallback func = [capture0 = connectManager_.get(), this](auto && PH1, auto && PH2) { capture0->NewConnection(std::forward<decltype(PH1)>(PH1), localAddr_, std::forward<decltype(PH2)>(PH2)); };
     acceptor_->SetNewConnectCallBack(func);
 
     connectManager_->SetListener(fd_, acceptor_);
-    LOG_DEBUG("start listen:"+localAddr_.ToIpPort());
+    DEBUG << "start listen:" << localAddr_.ToIpPort();
 }
 
 void TcpServer::OnMessage(const std::shared_ptr<Connection> &connection, const std::shared_ptr<Buffer> &buffer) {
 
-    work_->AddTask(std::bind(&TcpServer::OnMessageInWorker, this,connection,buffer));
+    work_->AddTask([this, connection, buffer] { OnMessageInWorker(connection, buffer); });
 //    std::string data = buffer->retrieveAllAsString();
 //    connection->Send(data);
 }
